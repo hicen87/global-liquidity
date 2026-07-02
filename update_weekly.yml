@@ -1,0 +1,31 @@
+name: 更新美元流动性管道(周频)
+
+on:
+  schedule:
+    - cron: '0 12 * * 6'      # 每周六 12:00 UTC (覆盖周五收盘的FRED周频数据)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas pandas_datareader
+      - name: 生成 data_weekly.js
+        run: python build_weekly.py
+      - name: 提交回写
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data_weekly.js
+          git diff --staged --quiet || git commit -m "chore: 自动更新美元流动性管道(周频) $(date -u +%Y-%m-%d)"
+          git push
