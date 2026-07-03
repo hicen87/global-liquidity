@@ -402,7 +402,9 @@ function buildSummary(){
   const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t)?'r':(/超配|占优|长配|加仓|留子弹|留弹药|回补|买入|重配|抄底/.test(t)?'g':'y');
   const stageRows=S.stage.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
-  const allocRows=S.allocation.map(r=>`<tr><td>${esc(r[0])}</td><td><span class="pill ${pillClass(r[1])}">${esc(r[1])}</span></td><td>${esc(r[2])}</td></tr>`).join('');
+  const _po={g:0,y:1,r:2};
+  const _alloc=S.allocation.slice().sort((a,b)=>_po[pillClass(a[1])]-_po[pillClass(b[1])]);
+  const allocRows=_alloc.map(r=>`<tr><td>${esc(r[0])}</td><td><span class="pill ${pillClass(r[1])}">${esc(r[1])}</span></td><td>${esc(r[2])}</td></tr>`).join('');
   const risks=S.risks.map(x=>`<div>• ${esc(x)}</div>`).join('');
   box.innerHTML=`
     <div class="head"><h3>资产配置摘要</h3><span class="stance">${esc(S.stance)}</span>
