@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>全球流动性周期看板</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="data.js"></script>
 <script src="data_weekly.js"></script>
 <script src="summary.js"></script>
@@ -29,19 +30,29 @@
   .seg button{background:transparent;color:var(--muted);border:0;padding:7px 13px;cursor:pointer;font-size:13px}
   .seg button.on{background:var(--blue);color:#fff}
   .lbl{color:var(--muted);font-size:12px;margin-right:2px}
+  #saveimg{position:fixed;top:14px;right:16px;z-index:999;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 15px;font-size:13px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  #saveimg:hover{background:#4a8be0}
+  #saveimg:disabled{opacity:.6;cursor:default}
   .summary{background:linear-gradient(180deg,#10213f,#0e1c38);border:1px solid var(--grid);border-radius:12px;margin-top:14px;padding:16px 18px}
   .summary .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .summary h3{font-size:15px;font-weight:600}
   .summary .stance{background:var(--red);color:#fff;font-size:12px;padding:3px 10px;border-radius:20px}
   .summary .one{color:var(--txt);font-size:13px;line-height:1.7;margin:10px 0 4px}
-  .summary .cols{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
-  .summary .colbox{flex:1;min-width:320px}
+  .summary .cols{display:flex;flex-direction:column;gap:16px;margin-top:8px}
+  .summary .colbox{width:100%}
   .summary .colttl{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:4px;letter-spacing:.3px}
   .summary table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
-  .summary td{padding:5px 8px;border-bottom:1px solid #16294b;vertical-align:top;line-height:1.5;word-break:break-word;overflow-wrap:anywhere}
+  .summary td{padding:7px 8px;border-bottom:1px solid #16294b;vertical-align:middle;line-height:1.5;word-break:break-word;overflow-wrap:anywhere}
   .summary td:first-child{color:var(--txt);font-weight:600;width:24%}
   .summary td:nth-child(2){color:var(--idx);width:34%}
   .summary td:last-child{color:var(--muted);width:42%}
+  .summary .alloctab td:first-child{width:15%}
+  .summary .alloctab td:nth-child(2){width:16%}
+  .summary .alloctab td:last-child{width:69%;color:var(--muted)}
+  .summary .pill{display:inline-block;padding:3px 12px;border-radius:16px;font-size:12px;font-weight:600;border:1px solid;white-space:nowrap}
+  .summary .pill.g{color:#46c583;border-color:#2f7d55;background:rgba(70,197,131,.08)}
+  .summary .pill.y{color:#e2b24a;border-color:#8a7326;background:rgba(226,178,74,.08)}
+  .summary .pill.r{color:#e5654a;border-color:#8a3a2c;background:rgba(229,101,74,.08)}
   .summary .trig{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:12px}
   .summary .trig div{flex:1;min-width:280px;background:#0a1730;border-radius:8px;padding:8px 10px}
   .summary .risk{color:var(--muted);font-size:11px;line-height:1.7;margin-top:10px;border-top:1px solid var(--grid);padding-top:8px}
@@ -64,6 +75,7 @@
 </style>
 </head>
 <body>
+<button id="saveimg">保存为图片</button>
 <div class="wrap">
   <h1>全球流动性周期看板 <span style="color:var(--muted);font-weight:400">· 流动性周期框架</span></h1>
   <div class="sub" id="sub">加载中…</div>
@@ -278,16 +290,17 @@ function buildSummary(){
   const S=window.SUMMARY; const box=document.getElementById('summary');
   if(!S){box.style.display='none';return;}
   const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t)?'r':(/超配|占优|长配|加仓|留子弹|留弹药|回补|买入|重配|抄底/.test(t)?'g':'y');
   const stageRows=S.stage.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
-  const allocRows=S.allocation.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
+  const allocRows=S.allocation.map(r=>`<tr><td>${esc(r[0])}</td><td><span class="pill ${pillClass(r[1])}">${esc(r[1])}</span></td><td>${esc(r[2])}</td></tr>`).join('');
   const risks=S.risks.map(x=>`<div>• ${esc(x)}</div>`).join('');
   box.innerHTML=`
     <div class="head"><h3>资产配置摘要</h3><span class="stance">${esc(S.stance)}</span>
       <span class="lbl">数据截至 ${esc(S.updated)}</span></div>
     <div class="one">${esc(S.oneliner)}</div>
     <div class="cols">
-      <div class="colbox"><div class="colttl">当前状态</div><table>${stageRows}</table></div>
-      <div class="colbox"><div class="colttl">分资产配置</div><table>${allocRows}</table></div>
+      <div class="colbox"><div class="colttl">当前状态</div><table class="statetab">${stageRows}</table></div>
+      <div class="colbox"><div class="colttl">分资产配置</div><table class="alloctab">${allocRows}</table></div>
     </div>
     <div class="trig">
       <div><b style="color:var(--green)">加风险信号</b><br>${esc(S.add)}</div>
@@ -342,6 +355,20 @@ function boot(d){
 if(window.DATA){ boot(window.DATA); }
 else{ fetch('data.json?_='+Date.now()).then(r=>r.json()).then(boot).catch(e=>{document.getElementById('sub').textContent='数据加载失败：'+e;}); }
 window.addEventListener('resize',()=>{chart.resize(); if(wchart)wchart.resize();});
+
+document.getElementById('saveimg').addEventListener('click',function(){
+  var btn=this; if(typeof html2canvas==='undefined'){alert('图片库未加载，请检查网络后重试');return;}
+  var old=btn.textContent; btn.disabled=true; btn.textContent='生成中…';
+  try{chart.resize(); if(wchart)wchart.resize();}catch(e){}
+  var target=document.querySelector('.wrap');
+  html2canvas(target,{backgroundColor:getComputedStyle(document.body).backgroundColor,scale:2,useCORS:true,logging:false}).then(function(canvas){
+    var d=(window.DATA&&window.DATA.latest&&window.DATA.latest.date)?window.DATA.latest.date:'';
+    var a=document.createElement('a');
+    a.download='全球流动性看板_'+d+'.png';
+    a.href=canvas.toDataURL('image/png'); a.click();
+    btn.disabled=false; btn.textContent=old;
+  }).catch(function(e){ alert('保存失败：'+e); btn.disabled=false; btn.textContent=old; });
+});
 </script>
 </body>
 </html>
