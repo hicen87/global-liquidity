@@ -142,6 +142,11 @@ cn_m1 = cn_m1[cn_m1.index>=pd.Timestamp(START)]; cn_m2 = cn_m2[cn_m2.index>=pd.T
 gl3 = pd.concat([fed_t,ecb_t,boj_t],axis=1).dropna().sum(axis=1); gl3_yoy = gl3.pct_change(YOY)*100
 gl = pd.concat([fed_t,ecb_t,boj_t,pboc_t],axis=1).dropna().sum(axis=1); gl_yoy = gl.pct_change(YOY)*100
 
+# 固定汇率口径: 全历史用最新汇率折算, 剔除汇率beta——现汇同比 − 固定汇率同比 = 汇率贡献
+_fx_eur = float(to_m(usd_eur).dropna().iloc[-1]); _fx_jpy = float(to_m(jpy_usd).dropna().iloc[-1])
+ecb_fx = to_m(ecb)*_fx_eur/1e6; boj_fx = to_m(boj)/(_fx_jpy*1e4)
+gl3_fx = pd.concat([fed_t,ecb_fx,boj_fx],axis=1).dropna().sum(axis=1); gl3_yoy_fx = gl3_fx.pct_change(YOY)*100
+
 assets = {}
 for key, yfc, name, group, unit, sge, lag in ASSETS:
     c = cget('asset_'+key)
@@ -218,8 +223,9 @@ def ser(sr):
 data={'updated':dt.datetime.now().strftime('%Y-%m-%d %H:%M'),
     'latest':{'total':round(float(gl.iloc[-1]),2),'yoy':round(float(gl_yoy.dropna().iloc[-1]),2),
         'total3':round(float(gl3.iloc[-1]),2),'yoy3':round(float(gl3_yoy.dropna().iloc[-1]),2),
+        'yoy3_fx':round(float(gl3_yoy_fx.dropna().iloc[-1]),2),
         'date':gl.index[-1].strftime('%Y-%m-%d')},
-    'gl_yoy':ser(gl_yoy),'gl3_yoy':ser(gl3_yoy),'gl_total':ser(gl),'gl3_total':ser(gl3),
+    'gl_yoy':ser(gl_yoy),'gl3_yoy':ser(gl3_yoy),'gl3_yoy_fx':ser(gl3_yoy_fx),'gl_total':ser(gl),'gl3_total':ser(gl3),
     'china_liq':{'m1_yoy':ser(cn_m1),'m2_yoy':ser(cn_m2),
         'latest':{'m1':round(float(cn_m1.iloc[-1]),1),'m2':round(float(cn_m2.iloc[-1]),1),'date':cn_m1.index[-1].strftime('%Y-%m-%d')}},
     'assets':assets,'asset_order':[k for k,*_ in ASSETS if k in assets],'lead_lag':lead_lag,

@@ -53,6 +53,28 @@ def ser(s, nd=3):
 nl = netliq
 wow = float(nl.iloc[-1] - nl.iloc[-2]) if len(nl) > 1 else 0.0
 w4 = float(nl.iloc[-1] - nl.iloc[-5]) if len(nl) > 4 else 0.0
+
+# ===== 规则化信号(阈值写死, 代码打分, 前端覆盖①源头对应行; 人只判定性行) =====
+def d13(s):
+    s = s.dropna(); return float(s.iloc[-1] - s.iloc[-14]) if len(s) > 13 else 0.0
+def p13(s):
+    s = s.dropna(); return float(s.iloc[-1] / s.iloc[-14] - 1) * 100 if len(s) > 13 else 0.0
+_rrp_b = float(rrp_t.dropna().iloc[-1] * 1e3)         # 十亿
+_spd = float(spread.iloc[-1])                          # bp
+_tga13 = d13(tga_t)                                    # 万亿, 13周变化
+_bs13 = p13(walcl_t)                                   # %, 13周变化
+signals = {
+    # ON RRP: <25B=缓冲耗尽bear; 25-200B=warn; >200B=有缓冲bull
+    'rrp': 'bear' if _rrp_b < 25 else ('warn' if _rrp_b < 200 else 'bull'),
+    # TGA 13周变化: 回补>+0.15T=抽水bear; 释放<-0.15T=放水bull; 其间warn
+    'tga': 'bear' if _tga13 > 0.15 else ('bull' if _tga13 < -0.15 else 'warn'),
+    # SOFR-IORB: >+5bp=回购紧张bear; -5~+5=warn; <-5bp=宽松bull
+    'spread': 'bear' if _spd > 5 else ('warn' if _spd >= -5 else 'bull'),
+    # 美联储总资产 13周变化: <-1%=缩表bear; -1~+1%=横盘warn; >+1%=扩表bull
+    'bs': 'bear' if _bs13 < -1 else ('warn' if _bs13 <= 1 else 'bull'),
+}
+sig_detail = {'tga13': round(_tga13, 3), 'bs13': round(_bs13, 2)}
+
 data = {
     'updated': dt.datetime.now().strftime('%Y-%m-%d %H:%M'),
     'latest': {
@@ -69,6 +91,7 @@ data = {
     'rrp_b': {'dates': ser(rrp_t)['dates'], 'values': [round(v*1e3, 1) for v in ser(rrp_t)['values']]},
     'reserves': ser(res_t, 3),
     'spread': ser(spread, 1),
+    'signals': signals, 'sig_detail': sig_detail,
 }
 
 with open(OUT, 'w', encoding='utf-8') as f:

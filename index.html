@@ -183,8 +183,10 @@ function renderStats(){
   const liqCard = LQ.isChina
     ? `<div class="card"><div class="k">中国流动性（M1 / M2 同比）</div><div class="v ${cls}" style="font-size:18px">${DATA.china_liq.latest.m1}% / ${DATA.china_liq.latest.m2}%</div></div>`
     : `<div class="card"><div class="k">全球流动性总量（${scope==='g3'?'美欧日':'＋中国'}）</div><div class="v">${scope==='g3'?L.total3:L.total} <span style="font-size:13px;color:var(--muted)">万亿$</span></div></div>`;
+  const fxSub=(!LQ.isChina&&scope==='g3'&&typeof L.yoy3_fx==='number')
+    ?`<div style="font-size:11px;color:var(--muted);margin-top:3px">固定汇率 <b style="color:${L.yoy3_fx>=0?'var(--green)':'var(--red)'}">${fmt(L.yoy3_fx)}%</b> · 汇率贡献 ${fmt(yoy-L.yoy3_fx)}%</div>`:'';
   document.getElementById('stats').innerHTML = liqCard + `
-    <div class="card"><div class="k">${LQ.isChina?'中国 M1 同比':'流动性条件（12月同比）'}</div><div class="v ${cls}">${fmt(yoy)}%</div></div>
+    <div class="card"><div class="k">${LQ.isChina?'中国 M1 同比':'流动性条件（12月同比）'}</div><div class="v ${cls}">${fmt(yoy)}%</div>${fxSub}</div>
     <div class="card"><div class="k">当前状态</div><div class="v ${cls}" style="font-size:18px">${state}</div></div>
     <div class="card"><div class="k">${a.name}（${a.unit}）</div><div class="v" style="color:${ac}">${lastVal(a)}</div></div>
     <div class="card"><div class="k">数据截至</div><div class="v" style="font-size:16px">${L.date}</div></div>`;
@@ -415,16 +417,23 @@ function buildCycles(){
     `<div class="step${i===S.clockStage?' active':''}">${s}${i===S.clockStage?clockBd+'<br><span style="font-size:10px;color:var(--red)">← 当前位置</span>':''}</div>`
   ).join('<div class="arrow">→</div>');
   const cn=document.getElementById('clocknote'); if(cn)cn.textContent=S.clockNote||'';
-  // 指标链（AUTO行由周频管道填充；diff用原始读数对比，AUTO行只比信号）
+  // 指标链：①源头四行由规则自动打分(阈值在build_weekly.py)，信号覆盖LLM值；AUTO读数由管道填充
+  const RS=W&&W.signals, SD=W&&W.sig_detail;
+  const ruleKey=k=>/ON RRP/.test(k)?'rrp':/TGA/.test(k)?'tga':/SOFR/.test(k)?'spread':/资产负债表/.test(k)?'bs':null;
   const inds=S.indicators.map(r=>{
     let[k,v,sig,note]=r;
+    const rk=ruleKey(k), ruled=RS&&rk&&RS[rk];
+    if(ruled) sig=RS[rk];
     const p=P&&P.indicators&&P.indicators[k];
-    const bd=!P?'':(p===undefined?B.add:((sig!==p[0]||v!==p[1])?B.mod:''));
+    // 规则行只按读数diff（信号由数据驱动，不算"观点变化"）；其余行按信号或读数diff
+    const bd=!P?'':(p===undefined?B.add:((ruled?v!==p[1]:(sig!==p[0]||v!==p[1]))?B.mod:''));
     if(v==='AUTO'&&L){
-      if(/TGA/.test(k)) v=`$${L.tga}T（截至${L.date}·自动）`;
+      if(/TGA/.test(k)) v=`$${L.tga}T（13周${SD?pm(SD.tga13)+'T':''}·截至${L.date}·自动）`;
       else if(/SOFR/.test(k)) v=`${pm(L.spread)}bp（截至${L.date}·自动）`;
       else v='—';
     }
+    if(ruled&&/资产负债表/.test(k)&&SD) v+=`（13周${pm(SD.bs13)}%）`;
+    if(ruled) note+='｜规则打分';
     return [k,v,sig,note,bd];
   });
   document.querySelector('#indtab tbody').innerHTML=inds.map(r=>
@@ -456,7 +465,7 @@ function buildCycles(){
     hist='<span style="color:var(--muted)">紧度轨迹 '+S.history.slice(-8).map(h=>`${h.d.slice(5)} <b style="color:${h.tight>=1.5?col('--red'):h.tight>=0.8?'#e2b24a':col('--green')}">${h.tight.toFixed(2)}</b>`).join(' → ')+'</span>';
   }
   document.getElementById('checkbar').innerHTML=`<div class="cbar" style="border-color:${ok?'var(--grid)':'#5a2a2a'}">
-    <span>流动性档位 <b style="color:${rc}">${regime}</b> <span style="color:var(--muted)">紧度${avg.toFixed(2)}/2</span></span>
+    <span>流动性档位 <b style="color:${rc}">${regime}</b> <span style="color:var(--muted)">紧度${avg.toFixed(2)}/2${RS?'·①源头规则打分':''}</span></span>
     <span>配置基调 <b>${dLab}</b> <span style="color:var(--muted)">防御度${d}</span></span>
     <span>净流动性13周 <b style="color:${(c13??0)>=0?col('--green'):col('--red')}">${typeof c13==='number'?(c13>=0?'+':'')+c13.toFixed(1)+'%':'—'}</b></span>
     ${hist}

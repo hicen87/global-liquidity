@@ -112,6 +112,12 @@ gl3_yoy = gl3.pct_change(YOY) * 100
 gl = pd.concat([fed_t, ecb_t, boj_t, pboc_t], axis=1).dropna().sum(axis=1)
 gl_yoy = gl.pct_change(YOY) * 100
 
+# 固定汇率口径: 全历史用最新汇率折算, 剔除汇率beta——现汇同比 − 固定汇率同比 = 汇率贡献
+_fx_eur = float(to_m(usd_eur).dropna().iloc[-1]); _fx_jpy = float(to_m(jpy_usd).dropna().iloc[-1])
+ecb_fx = to_m(ecb) * _fx_eur / 1e6; boj_fx = to_m(boj) / (_fx_jpy * 1e4)
+gl3_fx = pd.concat([fed_t, ecb_fx, boj_fx], axis=1).dropna().sum(axis=1)
+gl3_yoy_fx = gl3_fx.pct_change(YOY) * 100
+
 
 def get_asset(yf_code, sge_sym, lag, retries=4, wait=8):
     for i in range(retries):
@@ -288,10 +294,12 @@ data = {
         'yoy': round(float(gl_yoy.dropna().iloc[-1]), 2),
         'total3': round(float(gl3.iloc[-1]), 2),
         'yoy3': round(float(gl3_yoy.dropna().iloc[-1]), 2),
+        'yoy3_fx': round(float(gl3_yoy_fx.dropna().iloc[-1]), 2),
         'date': gl.index[-1].strftime('%Y-%m-%d'),
     },
     'gl_yoy': ser(gl_yoy),
     'gl3_yoy': ser(gl3_yoy),
+    'gl3_yoy_fx': ser(gl3_yoy_fx),
     'gl_total': ser(gl),
     'gl3_total': ser(gl3),
     'china_liq': {
