@@ -17,16 +17,8 @@ window.SUMMARY = {
   "updated": "2026-06-29",
   "stance": "降风险·转防御",
   "oneliner": "全球流动性同比仍在边际退潮（G3 −4.3%），但QT已于2025年底结束、美联储改以滚动续作维持准备金——所以是“被动收紧”而非主动抽水。本周关键变量是‘鹰’：Warsh首次主持议息维持3.50–3.75%、点阵转向加息（9人加息/8人不动/1人降息）、2026通胀预期上修至3.6%。同时美伊停火框架落地、布伦特跌至约$72，原油‘周期尾声警报’不仅未响、反而回落，金银进一步回吐（金约$4,000、银跌破$60）。整体姿态：降风险、提质量，从“再通胀进攻”转向“退潮防守”——但不清仓、不做空（泡沫晚期不做空）。主线：成长→价值、金融资产→实物、发达→中国防御价值股。",
-  /* stage 状态表与 indicators 指标链分工，禁止重复：
-     这里只放指标链没有的条目——月度流动性同比、净流动性周频(AUTO)、中国央行/M1、美股估值、商品价格。
-     央行政策、RRP/SOFR利差、美元/人民币等信号类条目一律归指标链(indicators)。 */
-  "stage": [
-    ["全球流动性同比(G3)", "−4.3%，边际转弱（截至5月）", "退潮、边际转紧；G4含中国+0.3%，中国在托底"],
-    ["净流动性(周频)", "AUTO", "读数由周频管道自动填充；源头各分项的信号判读见下方指标链"],
-    ["中国央行", "适度宽松，M1同比回升至5.5%、M2 8.6%", "仍有降准降息空间，但扩表效能边际递减"],
-    ["美股估值", "S&P 高位、Mag7集中度极高", "泡沫晚期、板块顶窗口临近（非大周期顶）"],
-    ["商品轮动", "金约$4,000回落、银跌破$60、铜创新高（~$11,771/吨）、布伦特跌至~$72", "原油‘周期尾声’信号未现，反因美伊停火回落"]
-  ],
+  /* 原"当前状态"表已取消(2026-07-04)：净流动性归周频管道、G3同比归顶部卡、
+     中国央行与美股估值归指标链、商品价格归时钟下方 clockNote。摘要模块只管配置。 */
   "allocation": [
     ["美股/科技", "减仓·止盈", "“持而盈之”；不做空；等流动性转弱+技术破位双确认再降；点阵转鹰是逆风"],
     ["A股", "相对占优", "对国内流动性最敏感、央行仍宽松、M1回升；偏防御/价值/高股息"],
@@ -66,6 +58,7 @@ window.SUMMARY = {
     {"name": "850天短周期（上证）", "stage": "850日线上方·上行趋势未破", "pct": 74}
   ],
   "clockStage": 1,
+  "clockNote": "金约$4,000回落 · 银跌破$60 · 铜创新高（~$11,771/吨）· 布伦特~$72——原油'周期尾声'信号未现，反因美伊停火回落",
   "indicators": [
     ["①源头·ON RRP余额", "≈$0（2025/10起de minimis）", "bear", "流动性缓冲已耗尽；再降即触发回购紧张"],
     ["①源头·TGA财政部账户", "AUTO", "warn", "财政抽水阀：TGA回升=从市场抽流动性（读数自动填充）"],
@@ -76,7 +69,9 @@ window.SUMMARY = {
     ["②传导·美债10Y vs 850日线", "10Y仍处850日线上方", "warn", "紧缩regime延续；长端利率全球定价"],
     ["③确认·美元指数DXY", "~101一线高位整固", "warn", "强美元压非美与金价；未破多年趋势"],
     ["③确认·人民币/套利逆转", "~6.8一线", "warn", "套利平仓压海外风险资产、利多中国资产重估"],
-    ["④温度计·比特币", "四年周期出清段（2025.10–2026.10）", "bear", "流动性最敏感哨兵；出清未完"]
+    ["④温度计·比特币", "四年周期出清段（2025.10–2026.10）", "bear", "流动性最敏感哨兵；出清未完"],
+    ["④温度计·美股估值", "S&P高位、Mag7集中度极高", "bear", "泡沫晚期、板块顶窗口临近（非大周期顶）"],
+    ["中国锚·央行/M1", "适度宽松；M1同比回升至5.5%、M2 8.6%", "bull", "“M1定买卖”：回升支撑中国资产；扩表效能边际递减"]
   ],
   /* history: 每周append一条 {d,tight,netliq,note}，勿改历史——用于验证"流动性领先约3个月" */
   "history": [
@@ -216,6 +211,26 @@ window.SUMMARY = {
 
   <div class="stats" id="stats"></div>
 
+  <div class="rank" id="cycleblock" style="display:none">
+    <h3>周期定位与自洽校验</h3>
+    <div class="rsub">五层周期框架 + ①源头→②传导→③确认→④温度计指标链。校验条自动核对：主观紧度打分 ↔ 配置防御度 ↔ 客观净流动性（13周），矛盾即亮红。角标=较上期自动diff：<span class="chg up">▲</span><span class="chg down">▼</span>进度升降 · <span class="chg mod">变</span>措辞/信号/倾向变化 · <span class="chg add">新</span>新增。</div>
+    <div id="checkbar"></div>
+    <div class="stats" id="cyclecards"></div>
+    <div class="rsub" style="margin:8px 0 2px">商品轮动时钟（金银→铜铝→原油=周期尾声）</div>
+    <div id="clockrow" class="clockrow"></div>
+    <div class="rsub" id="clocknote" style="margin:4px 0 0"></div>
+    <table class="indtab" id="indtab"><tbody></tbody></table>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="rank" id="weekly">
+    <h3>美元流动性管道（周频 · 高频前瞻）</h3>
+    <div class="rsub">净流动性 = 美联储总资产 − 财政部TGA − 隔夜逆回购。周频，用来补月度央行数据的及时性。SOFR−IORB 飙升=回购紧张预警；ON RRP 趋零=短端流动性见底。</div>
+    <div class="stats" id="wstats"></div>
+    <div id="weekchart"></div>
+  </div>
+
   <div class="controls">
     <span class="lbl">口径</span>
     <div class="seg" id="scope">
@@ -238,23 +253,6 @@ window.SUMMARY = {
     <div id="ranklist"></div>
   </div>
 
-  <div class="rank" id="weekly">
-    <h3>美元流动性管道（周频 · 高频前瞻）</h3>
-    <div class="rsub">净流动性 = 美联储总资产 − 财政部TGA − 隔夜逆回购。周频，用来补月度央行数据的及时性。SOFR−IORB 飙升=回购紧张预警；ON RRP 趋零=短端流动性见底。</div>
-    <div class="stats" id="wstats"></div>
-    <div id="weekchart"></div>
-  </div>
-
-  <div class="rank" id="cycleblock" style="display:none">
-    <h3>周期定位与自洽校验</h3>
-    <div class="rsub">五层周期框架 + ①源头→②传导→③确认→④温度计指标链。校验条自动核对：主观紧度打分 ↔ 配置防御度 ↔ 客观净流动性（13周），矛盾即亮红。角标=较上期自动diff：<span class="chg up">▲</span><span class="chg down">▼</span>进度升降 · <span class="chg mod">变</span>措辞/信号/倾向变化 · <span class="chg add">新</span>新增。</div>
-    <div id="checkbar"></div>
-    <div class="stats" id="cyclecards"></div>
-    <div class="rsub" style="margin:8px 0 2px">商品轮动时钟（金银→铜铝→原油=周期尾声）</div>
-    <div id="clockrow" class="clockrow"></div>
-    <table class="indtab" id="indtab"><tbody></tbody></table>
-  </div>
-
   <div class="note">
     <b>读图：</b>蓝色面积 = 央行资产负债表合计的 12 月同比（%，左轴）；彩色线 = 所选资产价格（右轴）。底部红弧 = 3.5年周期，红三角 = 实际波谷。<br>
     <b>分资产锚定：</b>中国资产（沪深300/恒生）自动叠加<b>中国 M1 同比</b>（“M1定买卖”）；美股/大宗/金银叠加<b>全球流动性</b>；口径开关仅对全球基准生效。<br>
@@ -262,8 +260,6 @@ window.SUMMARY = {
     <b>相关性提醒：</b>全样本相关系数普遍偏低且受regime影响（如近年黄金/美股走自身逻辑），此排行用于横向比较"谁对流动性更敏感"，非择时信号。大宗（原油/铜/商品）领先关系最清晰。<br>
     <b>数据源：</b>FRED（央行表/汇率）、AkShare（中国央行）、Yahoo Finance（指数/大宗/金银）。<span id="upd"></span>
   </div>
-
-  <div class="summary" id="summary"></div>
 </div>
 
 <script>
@@ -437,25 +433,13 @@ function buildSummary(){
   if(!S){box.style.display='none';return;}
   const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t)?'r':(/超配|占优|长配|加仓|留子弹|留弹药|回补|买入|重配|抄底/.test(t)?'g':'y');
-  // P0: 状态表里的周频数字一律由管道最新值自动填充，定性文字若与数据方向矛盾挂警示
-  const W=window.WEEKLY, L=W&&W.latest, pm=v=>(v>=0?'+':'')+v;
-  const stage=S.stage.map(r=>{
-    let[k,v,note]=r;
-    if(L&&/净流动性/.test(k)){
-      v=`$${L.netliq}T，周环比 ${pm(L.wow)}、4周 ${pm(L.w4)}（截至${L.date}·自动）`;
-      if(L.wow>0&&/抽水|转紧|收紧/.test(note)) note+=' ⚠定性滞后：最新周环比已转正';
-      if(L.wow<0&&/回补|转松|扩张/.test(note)) note+=' ⚠定性滞后：最新周环比已转负';
-    }
-    if(L&&/ON RRP|SOFR/.test(k)) v=`$${L.rrp}B / ${pm(L.spread)}bp（截至${L.date}·自动）`;
-    return [k,v,note];
-  });
-  // 摘要过期徽章：定性层落后于周频数据
+  // 摘要过期徽章：定性层落后于周频数据（原"当前状态"表已取消，条目归指标链/管道/时钟）
+  const W=window.WEEKLY, L=W&&W.latest;
   let stale='';
   if(L&&L.date>S.updated){
     const days=Math.round((new Date(L.date)-new Date(S.updated))/86400000);
     stale=`<span class="stalechip${days>10?' bad':''}">定量已更新至 ${esc(L.date)}，定性摘要截至 ${esc(S.updated)}${days>10?'·请重跑周更':''}</span>`;
   }
-  const stageRows=stage.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
   const _po={g:0,y:1,r:2};
   const _alloc=S.allocation.slice().sort((a,b)=>_po[pillClass(a[1])]-_po[pillClass(b[1])]);
   const P=S.prev;
@@ -471,7 +455,6 @@ function buildSummary(){
       <span class="lbl">定性截至 ${esc(S.updated)}</span>${stale}</div>
     <div class="one">${esc(S.oneliner)}</div>
     <div class="cols">
-      <div class="colbox"><div class="colttl">当前状态</div><table class="statetab">${stageRows}</table></div>
       <div class="colbox"><div class="colttl">分资产配置</div><table class="alloctab">${allocRows}</table></div>
     </div>
     <div class="trig">
@@ -537,6 +520,7 @@ function buildCycles(){
   document.getElementById('clockrow').innerHTML=steps.map((s,i)=>
     `<div class="step${i===S.clockStage?' active':''}">${s}${i===S.clockStage?clockBd+'<br><span style="font-size:10px;color:var(--red)">← 当前位置</span>':''}</div>`
   ).join('<div class="arrow">→</div>');
+  const cn=document.getElementById('clocknote'); if(cn)cn.textContent=S.clockNote||'';
   // 指标链（AUTO行由周频管道填充；diff用原始读数对比，AUTO行只比信号）
   const inds=S.indicators.map(r=>{
     let[k,v,sig,note]=r;

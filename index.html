@@ -105,6 +105,26 @@
 
   <div class="stats" id="stats"></div>
 
+  <div class="rank" id="cycleblock" style="display:none">
+    <h3>周期定位与自洽校验</h3>
+    <div class="rsub">五层周期框架 + ①源头→②传导→③确认→④温度计指标链。校验条自动核对：主观紧度打分 ↔ 配置防御度 ↔ 客观净流动性（13周），矛盾即亮红。角标=较上期自动diff：<span class="chg up">▲</span><span class="chg down">▼</span>进度升降 · <span class="chg mod">变</span>措辞/信号/倾向变化 · <span class="chg add">新</span>新增。</div>
+    <div id="checkbar"></div>
+    <div class="stats" id="cyclecards"></div>
+    <div class="rsub" style="margin:8px 0 2px">商品轮动时钟（金银→铜铝→原油=周期尾声）</div>
+    <div id="clockrow" class="clockrow"></div>
+    <div class="rsub" id="clocknote" style="margin:4px 0 0"></div>
+    <table class="indtab" id="indtab"><tbody></tbody></table>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="rank" id="weekly">
+    <h3>美元流动性管道（周频 · 高频前瞻）</h3>
+    <div class="rsub">净流动性 = 美联储总资产 − 财政部TGA − 隔夜逆回购。周频，用来补月度央行数据的及时性。SOFR−IORB 飙升=回购紧张预警；ON RRP 趋零=短端流动性见底。</div>
+    <div class="stats" id="wstats"></div>
+    <div id="weekchart"></div>
+  </div>
+
   <div class="controls">
     <span class="lbl">口径</span>
     <div class="seg" id="scope">
@@ -127,23 +147,6 @@
     <div id="ranklist"></div>
   </div>
 
-  <div class="rank" id="weekly">
-    <h3>美元流动性管道（周频 · 高频前瞻）</h3>
-    <div class="rsub">净流动性 = 美联储总资产 − 财政部TGA − 隔夜逆回购。周频，用来补月度央行数据的及时性。SOFR−IORB 飙升=回购紧张预警；ON RRP 趋零=短端流动性见底。</div>
-    <div class="stats" id="wstats"></div>
-    <div id="weekchart"></div>
-  </div>
-
-  <div class="rank" id="cycleblock" style="display:none">
-    <h3>周期定位与自洽校验</h3>
-    <div class="rsub">五层周期框架 + ①源头→②传导→③确认→④温度计指标链。校验条自动核对：主观紧度打分 ↔ 配置防御度 ↔ 客观净流动性（13周），矛盾即亮红。角标=较上期自动diff：<span class="chg up">▲</span><span class="chg down">▼</span>进度升降 · <span class="chg mod">变</span>措辞/信号/倾向变化 · <span class="chg add">新</span>新增。</div>
-    <div id="checkbar"></div>
-    <div class="stats" id="cyclecards"></div>
-    <div class="rsub" style="margin:8px 0 2px">商品轮动时钟（金银→铜铝→原油=周期尾声）</div>
-    <div id="clockrow" class="clockrow"></div>
-    <table class="indtab" id="indtab"><tbody></tbody></table>
-  </div>
-
   <div class="note">
     <b>读图：</b>蓝色面积 = 央行资产负债表合计的 12 月同比（%，左轴）；彩色线 = 所选资产价格（右轴）。底部红弧 = 3.5年周期，红三角 = 实际波谷。<br>
     <b>分资产锚定：</b>中国资产（沪深300/恒生）自动叠加<b>中国 M1 同比</b>（“M1定买卖”）；美股/大宗/金银叠加<b>全球流动性</b>；口径开关仅对全球基准生效。<br>
@@ -151,8 +154,6 @@
     <b>相关性提醒：</b>全样本相关系数普遍偏低且受regime影响（如近年黄金/美股走自身逻辑），此排行用于横向比较"谁对流动性更敏感"，非择时信号。大宗（原油/铜/商品）领先关系最清晰。<br>
     <b>数据源：</b>FRED（央行表/汇率）、AkShare（中国央行）、Yahoo Finance（指数/大宗/金银）。<span id="upd"></span>
   </div>
-
-  <div class="summary" id="summary"></div>
 </div>
 
 <script>
@@ -326,25 +327,13 @@ function buildSummary(){
   if(!S){box.style.display='none';return;}
   const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t)?'r':(/超配|占优|长配|加仓|留子弹|留弹药|回补|买入|重配|抄底/.test(t)?'g':'y');
-  // P0: 状态表里的周频数字一律由管道最新值自动填充，定性文字若与数据方向矛盾挂警示
-  const W=window.WEEKLY, L=W&&W.latest, pm=v=>(v>=0?'+':'')+v;
-  const stage=S.stage.map(r=>{
-    let[k,v,note]=r;
-    if(L&&/净流动性/.test(k)){
-      v=`$${L.netliq}T，周环比 ${pm(L.wow)}、4周 ${pm(L.w4)}（截至${L.date}·自动）`;
-      if(L.wow>0&&/抽水|转紧|收紧/.test(note)) note+=' ⚠定性滞后：最新周环比已转正';
-      if(L.wow<0&&/回补|转松|扩张/.test(note)) note+=' ⚠定性滞后：最新周环比已转负';
-    }
-    if(L&&/ON RRP|SOFR/.test(k)) v=`$${L.rrp}B / ${pm(L.spread)}bp（截至${L.date}·自动）`;
-    return [k,v,note];
-  });
-  // 摘要过期徽章：定性层落后于周频数据
+  // 摘要过期徽章：定性层落后于周频数据（原"当前状态"表已取消，条目归指标链/管道/时钟）
+  const W=window.WEEKLY, L=W&&W.latest;
   let stale='';
   if(L&&L.date>S.updated){
     const days=Math.round((new Date(L.date)-new Date(S.updated))/86400000);
     stale=`<span class="stalechip${days>10?' bad':''}">定量已更新至 ${esc(L.date)}，定性摘要截至 ${esc(S.updated)}${days>10?'·请重跑周更':''}</span>`;
   }
-  const stageRows=stage.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
   const _po={g:0,y:1,r:2};
   const _alloc=S.allocation.slice().sort((a,b)=>_po[pillClass(a[1])]-_po[pillClass(b[1])]);
   const P=S.prev;
@@ -360,7 +349,6 @@ function buildSummary(){
       <span class="lbl">定性截至 ${esc(S.updated)}</span>${stale}</div>
     <div class="one">${esc(S.oneliner)}</div>
     <div class="cols">
-      <div class="colbox"><div class="colttl">当前状态</div><table class="statetab">${stageRows}</table></div>
       <div class="colbox"><div class="colttl">分资产配置</div><table class="alloctab">${allocRows}</table></div>
     </div>
     <div class="trig">
@@ -426,6 +414,7 @@ function buildCycles(){
   document.getElementById('clockrow').innerHTML=steps.map((s,i)=>
     `<div class="step${i===S.clockStage?' active':''}">${s}${i===S.clockStage?clockBd+'<br><span style="font-size:10px;color:var(--red)">← 当前位置</span>':''}</div>`
   ).join('<div class="arrow">→</div>');
+  const cn=document.getElementById('clocknote'); if(cn)cn.textContent=S.clockNote||'';
   // 指标链（AUTO行由周频管道填充；diff用原始读数对比，AUTO行只比信号）
   const inds=S.indicators.map(r=>{
     let[k,v,sig,note]=r;
