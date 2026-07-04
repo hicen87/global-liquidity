@@ -411,10 +411,10 @@ function buildCycles(){
   // 较上期变化角标（对比 S.prev 快照，自动diff）
   const P=S.prev;
   const B={up:'<span class="chg up">▲</span>',down:'<span class="chg down">▼</span>',mod:'<span class="chg mod">变</span>',add:'<span class="chg add">新</span>'};
-  // 周期卡
-  const cycColor=n=>/康波/.test(n)?'#bc8cff':/35年|泡沫/.test(n)?col('--red'):/流动性/.test(n)?'#e2b24a':/人民币|850/.test(n)?col('--idx'):col('--green');
+  // 周期卡：横条颜色=风险档位（绿<60没问题 / 黄60-84谨慎 / 红≥85警戒），由pct自动定档
+  const cycColor=p=>p>=85?col('--red'):p>=60?'#e2b24a':col('--green');
   document.getElementById('cyclecards').innerHTML=S.cycles.map(c=>{
-    const cc=cycColor(c.name), p=P&&P.cycles&&P.cycles[c.name];
+    const cc=cycColor(c.pct), p=P&&P.cycles&&P.cycles[c.name];
     const bd=!P?'':(p===undefined?B.add:((c.pct>p[0]?B.up:c.pct<p[0]?B.down:'')+(c.stage!==p[1]?B.mod:'')));
     return `<div class="card" style="min-width:190px"><div class="k">${esc(c.name)}</div>
       <div style="font-size:13px;font-weight:600;margin-top:4px;line-height:1.5">${esc(c.stage)}${bd}</div>
