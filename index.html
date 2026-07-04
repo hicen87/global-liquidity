@@ -69,6 +69,29 @@
   .row .barwrap{flex:1;height:14px;background:#0a1730;border-radius:7px;overflow:hidden}
   .row .bar{height:100%;border-radius:7px}
   .row .rv{width:52px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
+  .clockrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .clockrow .step{flex:1;min-width:110px;text-align:center;padding:8px 6px;border:1px solid var(--grid);border-radius:8px;background:#0a1730;font-size:12px;color:var(--muted)}
+  .clockrow .step.active{border-color:var(--red);color:var(--txt);background:rgba(192,57,43,.12)}
+  .clockrow .arrow{align-self:center;color:var(--muted)}
+  .indtab{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;table-layout:fixed}
+  .indtab td{padding:6px 8px;border-bottom:1px solid #16294b;line-height:1.5;word-break:break-word;overflow-wrap:anywhere}
+  .indtab td:first-child{font-weight:600;width:22%}
+  .indtab td:nth-child(2){color:var(--idx);width:34%}
+  .indtab td:last-child{color:var(--muted)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+  .dot.bull{background:var(--green)}.dot.warn{background:#e2b24a}.dot.bear{background:var(--red)}
+  .cbar{background:#0a1730;border:1px solid var(--grid);border-radius:8px;padding:10px 12px;font-size:12px;margin:8px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .cbar .ok{color:var(--green);font-weight:600}.cbar .bad{color:var(--red);font-weight:600}
+  .cbar ul{margin:4px 0 0;padding-left:18px;color:#e08a7a;width:100%;line-height:1.6}
+  .pbar{height:5px;background:#0a1730;border-radius:3px;margin-top:8px;overflow:hidden}
+  .pbar i{display:block;height:100%;border-radius:3px}
+  .stalechip{font-size:11px;padding:2px 8px;border-radius:12px;border:1px solid #8a7326;color:#e2b24a}
+  .stalechip.bad{border-color:#8a3a2c;color:#e5654a}
+  .chg{font-size:10px;padding:0 5px;border-radius:8px;border:1px solid;margin-left:5px;font-weight:600;white-space:nowrap;vertical-align:middle}
+  .chg.up{color:var(--green);border-color:var(--green)}
+  .chg.down{color:var(--red);border-color:var(--red)}
+  .chg.mod{color:#bc8cff;border-color:#bc8cff}
+  .chg.add{color:var(--idx);border-color:var(--idx)}
   .note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:14px;border-top:1px solid var(--grid);padding-top:12px}
   .note b{color:var(--txt)}
   @media(max-width:640px){#chart{height:440px}.card .v{font-size:18px}.row .tag{display:none}}
@@ -109,6 +132,16 @@
     <div class="rsub">净流动性 = 美联储总资产 − 财政部TGA − 隔夜逆回购。周频，用来补月度央行数据的及时性。SOFR−IORB 飙升=回购紧张预警；ON RRP 趋零=短端流动性见底。</div>
     <div class="stats" id="wstats"></div>
     <div id="weekchart"></div>
+  </div>
+
+  <div class="rank" id="cycleblock" style="display:none">
+    <h3>周期定位与自洽校验</h3>
+    <div class="rsub">五层周期框架 + ①源头→②传导→③确认→④温度计指标链。校验条自动核对：主观紧度打分 ↔ 配置防御度 ↔ 客观净流动性（13周），矛盾即亮红。角标=较上期自动diff：<span class="chg up">▲</span><span class="chg down">▼</span>进度升降 · <span class="chg mod">变</span>措辞/信号/倾向变化 · <span class="chg add">新</span>新增。</div>
+    <div id="checkbar"></div>
+    <div class="stats" id="cyclecards"></div>
+    <div class="rsub" style="margin:8px 0 2px">商品轮动时钟（金银→铜铝→原油=周期尾声）</div>
+    <div id="clockrow" class="clockrow"></div>
+    <table class="indtab" id="indtab"><tbody></tbody></table>
   </div>
 
   <div class="note">
@@ -264,9 +297,11 @@ function buildLeadLag(){
   DATA.lead_lag.forEach(r=>{
     const a=DATA.assets[r.key], c=assetColor(a.group);
     const w=Math.max(2,Math.abs(r.best_corr)/maxAbs*100);
+    const weak=Math.abs(r.best_corr)<0.15;   // 弱相关置灰：扫描挑最大值易出伪"领先"，不给噪声视觉权重
     const row=document.createElement('div'); row.className='row'; row.dataset.k=r.key;
+    if(weak)row.style.opacity=.38;
     row.innerHTML=`<div class="nm">${r.name}</div>
-      <div class="tag">${lagTag(r.best_lag)}</div>
+      <div class="tag">${weak?'无稳定关系(|r|&lt;0.15)':lagTag(r.best_lag)}</div>
       <div class="barwrap"><div class="bar" style="width:${w}%;background:${c}"></div></div>
       <div class="rv" style="color:${r.best_corr>=0?col('--green'):col('--red')}">${fmt(r.best_corr)}</div>`;
     row.onclick=()=>selectMetal(r.key);
@@ -291,14 +326,38 @@ function buildSummary(){
   if(!S){box.style.display='none';return;}
   const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t)?'r':(/超配|占优|长配|加仓|留子弹|留弹药|回补|买入|重配|抄底/.test(t)?'g':'y');
-  const stageRows=S.stage.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
+  // P0: 状态表里的周频数字一律由管道最新值自动填充，定性文字若与数据方向矛盾挂警示
+  const W=window.WEEKLY, L=W&&W.latest, pm=v=>(v>=0?'+':'')+v;
+  const stage=S.stage.map(r=>{
+    let[k,v,note]=r;
+    if(L&&/净流动性/.test(k)){
+      v=`$${L.netliq}T，周环比 ${pm(L.wow)}、4周 ${pm(L.w4)}（截至${L.date}·自动）`;
+      if(L.wow>0&&/抽水|转紧|收紧/.test(note)) note+=' ⚠定性滞后：最新周环比已转正';
+      if(L.wow<0&&/回补|转松|扩张/.test(note)) note+=' ⚠定性滞后：最新周环比已转负';
+    }
+    if(L&&/ON RRP|SOFR/.test(k)) v=`$${L.rrp}B / ${pm(L.spread)}bp（截至${L.date}·自动）`;
+    return [k,v,note];
+  });
+  // 摘要过期徽章：定性层落后于周频数据
+  let stale='';
+  if(L&&L.date>S.updated){
+    const days=Math.round((new Date(L.date)-new Date(S.updated))/86400000);
+    stale=`<span class="stalechip${days>10?' bad':''}">定量已更新至 ${esc(L.date)}，定性摘要截至 ${esc(S.updated)}${days>10?'·请重跑周更':''}</span>`;
+  }
+  const stageRows=stage.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
   const _po={g:0,y:1,r:2};
   const _alloc=S.allocation.slice().sort((a,b)=>_po[pillClass(a[1])]-_po[pillClass(b[1])]);
-  const allocRows=_alloc.map(r=>`<tr><td>${esc(r[0])}</td><td><span class="pill ${pillClass(r[1])}">${esc(r[1])}</span></td><td>${esc(r[2])}</td></tr>`).join('');
+  const P=S.prev;
+  const allocRows=_alloc.map(r=>{
+    const p=P&&P.allocation&&P.allocation[r[0]];
+    const bd=!P?'':(p===undefined?'<span class="chg add">新</span>':(p!==r[1]?'<span class="chg mod">变</span>':''));
+    return `<tr><td>${esc(r[0])}${bd}</td><td><span class="pill ${pillClass(r[1])}">${esc(r[1])}</span></td><td>${esc(r[2])}</td></tr>`;
+  }).join('');
+  const stanceBd=(P&&P.stance&&P.stance!==S.stance)?'<span class="chg mod">变</span>':'';
   const risks=S.risks.map(x=>`<div>• ${esc(x)}</div>`).join('');
   box.innerHTML=`
-    <div class="head"><h3>资产配置摘要</h3><span class="stance">${esc(S.stance)}</span>
-      <span class="lbl">数据截至 ${esc(S.updated)}</span></div>
+    <div class="head"><h3>资产配置摘要</h3><span class="stance">${esc(S.stance)}</span>${stanceBd}
+      <span class="lbl">定性截至 ${esc(S.updated)}</span>${stale}</div>
     <div class="one">${esc(S.oneliner)}</div>
     <div class="cols">
       <div class="colbox"><div class="colttl">当前状态</div><table class="statetab">${stageRows}</table></div>
@@ -315,9 +374,15 @@ let wchart=null;
 function buildWeekly(){
   const W=window.WEEKLY; if(!W){document.getElementById('weekly').style.display='none';return;}
   const L=W.latest, sgn=v=>v>=0?'pos':'neg', pm=v=>(v>=0?'+':'')+v;
+  // P2: 13周变化 + 一年分位（客观趋势context，前端直接从序列算，不依赖构建脚本）
+  const nlv=W.netliq.values, nn=nlv.length;
+  const w13=nn>13?+(nlv[nn-1]-nlv[nn-14]).toFixed(3):null;
+  const yr=nlv.slice(-52), pctl=Math.round(yr.filter(v=>v<=nlv[nn-1]).length/yr.length*100);
+  window.__w13=w13; window.__w13pct=nn>13?(nlv[nn-1]/nlv[nn-14]-1)*100:null;
   document.getElementById('wstats').innerHTML=`
     <div class="card"><div class="k">净流动性</div><div class="v">${L.netliq} <span style="font-size:13px;color:var(--muted)">万亿$</span></div></div>
     <div class="card"><div class="k">周环比 / 4周</div><div class="v ${sgn(L.wow)}" style="font-size:17px">${pm(L.wow)} / ${pm(L.w4)}</div></div>
+    <div class="card"><div class="k">13周 / 一年分位</div><div class="v ${w13!=null?sgn(w13):''}" style="font-size:17px">${w13!=null?pm(w13):'—'} / ${pctl}%</div></div>
     <div class="card"><div class="k">ON RRP</div><div class="v">${L.rrp} <span style="font-size:13px;color:var(--muted)">十亿$</span></div></div>
     <div class="card"><div class="k">银行准备金</div><div class="v">${L.reserves} <span style="font-size:13px;color:var(--muted)">万亿$</span></div></div>
     <div class="card"><div class="k">SOFR−IORB</div><div class="v ${L.spread>5?'neg':'pos'}" style="font-size:17px">${pm(L.spread)} bp</div></div>
@@ -336,6 +401,81 @@ function buildWeekly(){
   });
 }
 
+// ===== 周期定位与自洽校验（P1：五层周期+时钟+指标链+校验条）=====
+function buildCycles(){
+  const S=window.SUMMARY, blk=document.getElementById('cycleblock');
+  if(!S||!S.cycles||!S.indicators){return;}
+  blk.style.display='';
+  const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const W=window.WEEKLY, L=W&&W.latest, pm=v=>(v>=0?'+':'')+v;
+  // 较上期变化角标（对比 S.prev 快照，自动diff）
+  const P=S.prev;
+  const B={up:'<span class="chg up">▲</span>',down:'<span class="chg down">▼</span>',mod:'<span class="chg mod">变</span>',add:'<span class="chg add">新</span>'};
+  // 周期卡
+  const cycColor=n=>/康波/.test(n)?'#bc8cff':/35年|泡沫/.test(n)?col('--red'):/流动性/.test(n)?'#e2b24a':/人民币|850/.test(n)?col('--idx'):col('--green');
+  document.getElementById('cyclecards').innerHTML=S.cycles.map(c=>{
+    const cc=cycColor(c.name), p=P&&P.cycles&&P.cycles[c.name];
+    const bd=!P?'':(p===undefined?B.add:((c.pct>p[0]?B.up:c.pct<p[0]?B.down:'')+(c.stage!==p[1]?B.mod:'')));
+    return `<div class="card" style="min-width:190px"><div class="k">${esc(c.name)}</div>
+      <div style="font-size:13px;font-weight:600;margin-top:4px;line-height:1.5">${esc(c.stage)}${bd}</div>
+      <div class="pbar"><i style="width:${c.pct}%;background:${cc}"></i></div></div>`;
+  }).join('');
+  // 商品时钟
+  const clockBd=(P&&P.clockStage!==undefined&&P.clockStage!==S.clockStage)?B.mod:'';
+  const steps=['① 金银贵金属','② 有色金属(铜铝)','③ 原油启动','④ 周期尾声'];
+  document.getElementById('clockrow').innerHTML=steps.map((s,i)=>
+    `<div class="step${i===S.clockStage?' active':''}">${s}${i===S.clockStage?clockBd+'<br><span style="font-size:10px;color:var(--red)">← 当前位置</span>':''}</div>`
+  ).join('<div class="arrow">→</div>');
+  // 指标链（AUTO行由周频管道填充；diff用原始读数对比，AUTO行只比信号）
+  const inds=S.indicators.map(r=>{
+    let[k,v,sig,note]=r;
+    const p=P&&P.indicators&&P.indicators[k];
+    const bd=!P?'':(p===undefined?B.add:((sig!==p[0]||v!==p[1])?B.mod:''));
+    if(v==='AUTO'&&L){
+      if(/TGA/.test(k)) v=`$${L.tga}T（截至${L.date}·自动）`;
+      else if(/SOFR/.test(k)) v=`${pm(L.spread)}bp（截至${L.date}·自动）`;
+      else v='—';
+    }
+    return [k,v,sig,note,bd];
+  });
+  document.querySelector('#indtab tbody').innerHTML=inds.map(r=>
+    `<tr><td>${esc(r[0])}${r[4]}</td><td>${esc(r[1])}</td><td><span class="dot ${r[2]}"></span>${esc(r[3])}</td></tr>`).join('');
+  // 校验条：主观紧度 ↔ 配置防御度 ↔ 客观净流动性13周
+  const tw={bear:2,warn:1,bull:0};
+  const SRC=inds.filter(r=>/^①源头/.test(r[0]));
+  const avg=SRC.length?SRC.reduce((s,r)=>s+(tw[r[2]]??1),0)/SRC.length:1;
+  const regime=avg>=1.5?'收紧':avg>=0.8?'边际收紧':'中性偏松';
+  const rc=avg>=1.5?col('--red'):avg>=0.8?'#e2b24a':col('--green');
+  const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t)?'r':(/超配|占优|长配|加仓|留子弹|留弹药|回补|买入|重配|抄底/.test(t)?'g':'y');
+  const wv={r:1,y:0,g:-1}, riskOn=/科技|半导体|比特币|纳指|成长/, defen=/现金|黄金|白银|价值|A股|红利|美债|美元/;
+  let d=0;
+  (S.allocation||[]).forEach(r=>{const v=wv[pillClass(r[1])]??0;if(riskOn.test(r[0]))d+=v;else if(defen.test(r[0]))d-=v;});
+  const dLab=d>=3?'防御':d>=1?'偏防御':d<=-3?'进攻':d<=-1?'偏进攻':'中性';
+  const issues=[];
+  if(avg>=0.8&&d<1)issues.push(`流动性${regime}，但配置防御度偏低(${d})——应增防御/减进攻`);
+  if(avg<0.8&&d>3)issues.push(`流动性中性偏松，但配置过度防御(${d})——或错失反弹`);
+  const c13=window.__w13pct;
+  if(typeof c13==='number'){
+    if(c13<=-2&&avg<0.8)issues.push(`净流动性13周${c13.toFixed(1)}%（客观收紧），但主观档位偏松——复核①源头打分`);
+    if(c13>=2&&avg>=1.5)issues.push(`净流动性13周+${c13.toFixed(1)}%（客观转松），但主观档位收紧——复核①源头打分或注明原因`);
+  }
+  const liqCyc=S.cycles.find(c=>/流动性/.test(c.name));
+  if(liqCyc&&avg>=1.5&&!/收紧|拐点|回落|退潮/.test(liqCyc.stage))issues.push('源头层收紧，但流动性周期卡措辞未体现——核对措辞');
+  const ok=issues.length===0;
+  let hist='';
+  if(S.history&&S.history.length){
+    hist='<span style="color:var(--muted)">紧度轨迹 '+S.history.slice(-8).map(h=>`${h.d.slice(5)} <b style="color:${h.tight>=1.5?col('--red'):h.tight>=0.8?'#e2b24a':col('--green')}">${h.tight.toFixed(2)}</b>`).join(' → ')+'</span>';
+  }
+  document.getElementById('checkbar').innerHTML=`<div class="cbar" style="border-color:${ok?'var(--grid)':'#5a2a2a'}">
+    <span>流动性档位 <b style="color:${rc}">${regime}</b> <span style="color:var(--muted)">紧度${avg.toFixed(2)}/2</span></span>
+    <span>配置基调 <b>${dLab}</b> <span style="color:var(--muted)">防御度${d}</span></span>
+    <span>净流动性13周 <b style="color:${(c13??0)>=0?col('--green'):col('--red')}">${typeof c13==='number'?(c13>=0?'+':'')+c13.toFixed(1)+'%':'—'}</b></span>
+    ${hist}
+    <span style="margin-left:auto" class="${ok?'ok':'bad'}">${ok?'✓ 各模块自洽':'⚠ '+issues.length+' 项待核'}</span>
+    ${ok?'':'<ul>'+issues.map(x=>'<li>'+x+'</li>').join('')+'</ul>'}
+  </div>`;
+}
+
 function bindScope(){
   document.querySelectorAll('#scope button').forEach(b=>{
     b.onclick=()=>{document.querySelectorAll('#scope button').forEach(x=>x.classList.remove('on'));b.classList.add('on');scope=b.dataset.v;render();};
@@ -351,7 +491,7 @@ function boot(d){
   document.getElementById('sub').textContent='复现「全球流动性条件 vs 风险资产」叠加图 — 数据更新于 '+d.updated;
   document.getElementById('upd').textContent=' 更新时间：'+d.updated;
   cycleMode=DATA.cycle_default||'manual';
-  bindScope(); buildAssetBar(); buildCycleBar(); buildLeadLag(); buildSummary(); buildWeekly(); render();
+  bindScope(); buildAssetBar(); buildCycleBar(); buildLeadLag(); buildWeekly(); buildSummary(); buildCycles(); render();
 }
 
 if(window.DATA){ boot(window.DATA); }
