@@ -522,7 +522,7 @@ document.getElementById('saveimg').addEventListener('click',function(){
 </script>
 <script>
 (function(){
-  var KEY='brassivo_sub', API='https://brassivo-subscribe.jackycen-brassivo.workers.dev/subscribe';
+  var KEY='brassivo_sub', API='https://api.brassivo.com/subscribe';
   if(localStorage.getItem(KEY)==='1') return;
   function init(){
     var w=document.querySelector('.wrap'); if(!w) return;
@@ -535,7 +535,7 @@ document.getElementById('saveimg').addEventListener('click',function(){
       e.preventDefault();
       var em=document.getElementById('bsube').value.trim(), m=document.getElementById('bsubm');
       m.textContent='提交中…';
-      fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em})})
+      fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em}),signal:(window.AbortSignal&&AbortSignal.timeout)?AbortSignal.timeout(10000):undefined})
         .then(function(r){return r.json();}).then(function(j){ if(j.ok){ localStorage.setItem(KEY,'1'); w.style.maxHeight=''; w.style.overflow=''; ov.remove(); } else { m.textContent='邮箱格式有误，请重试'; }})
         .catch(function(){ m.textContent='网络异常，请稍后重试'; });
     });
