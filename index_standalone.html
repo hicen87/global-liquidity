@@ -622,10 +622,17 @@ document.getElementById('saveimg').addEventListener('click',function(){
   var target=document.querySelector('.wrap');
   html2canvas(target,{backgroundColor:getComputedStyle(document.body).backgroundColor,scale:2,useCORS:true,logging:false}).then(function(canvas){
     var d=(window.DATA&&window.DATA.latest&&window.DATA.latest.date)?window.DATA.latest.date:'';
-    var a=document.createElement('a');
-    a.download='全球流动性看板_'+d+'.png';
-    a.href=canvas.toDataURL('image/png'); a.click();
-    btn.disabled=false; btn.textContent=old;
+    canvas.toBlob(function(blob){
+      var name='全球流动性看板_'+d+'.png';
+      var file; try{ file=new File([blob],name,{type:'image/png'}); }catch(e){}
+      if(file && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file]}).catch(function(){});
+      } else {
+        var a=document.createElement('a');
+        a.download=name; a.href=URL.createObjectURL(blob); a.click();
+      }
+      btn.disabled=false; btn.textContent=old;
+    },'image/png');
   }).catch(function(e){ alert('保存失败：'+e); btn.disabled=false; btn.textContent=old; });
 });
 </script>
