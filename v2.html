@@ -215,6 +215,7 @@
   <div class="chain" id="chainrow"></div>
   <div class="chaindetail" id="chaindetail"><table><tbody></tbody></table></div>
 
+  <div style="font-size:13px;font-weight:600;margin-top:22px">商品轮动时钟 <span class="lbl" style="font-weight:400;margin-left:6px">一轮周期里商品按固定顺序接力上涨——看轮到谁，就知道周期走到哪；③原油启动 = 周期尾声警报</span></div>
   <div class="clockrow" id="clockrow"></div>
   <div class="clocknote" id="clocknote"></div>
 
@@ -433,10 +434,10 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
 
 /* 商品时钟 */
 (function(){
-  const steps=['① 金银贵金属','② 有色金属(铜铝)','③ 原油启动','④ 周期尾声'];
+  const steps=[['① 金银贵金属','货币属性·闻到放水先涨'],['② 有色金属(铜铝)','实体需求回暖接棒'],['③ 原油启动','通胀全面抬头才涨'],['④ 周期尾声','油价倒逼央行收紧']];
   const clockBd=(P&&P.clockStage!==undefined&&P.clockStage!==S.clockStage)?B.mod:'';
   document.getElementById('clockrow').innerHTML=steps.map((s,i)=>
-    `<div class="cstep${i===S.clockStage?' active':''}">${s}${i===S.clockStage?clockBd+'<br><span style="font-size:10px;color:var(--red)">← 当前位置</span>':''}</div>`
+    `<div class="cstep${i===S.clockStage?' active':''}">${s[0]}${i===S.clockStage?clockBd+' <span style="font-size:10px;color:var(--red)">← 当前</span>':''}<br><span style="font-size:10px;opacity:.75">${s[1]}</span></div>`
   ).join('<div class="carrow">→</div>');
   document.getElementById('clocknote').textContent=S.clockNote||'';
 })();
