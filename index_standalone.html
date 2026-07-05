@@ -626,5 +626,28 @@ document.getElementById('saveimg').addEventListener('click',function(){
   }).catch(function(e){ alert('保存失败：'+e); btn.disabled=false; btn.textContent=old; });
 });
 </script>
+<script>
+(function(){
+  var KEY='brassivo_sub', API='https://brassivo-subscribe.jackycen-brassivo.workers.dev/subscribe';
+  if(localStorage.getItem(KEY)==='1') return;
+  function init(){
+    var w=document.querySelector('.wrap'); if(!w) return;
+    w.style.maxHeight='110vh'; w.style.overflow='hidden'; w.style.position='relative';
+    var ov=document.createElement('div');
+    ov.style.cssText='position:absolute;left:0;right:0;bottom:0;height:60vh;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(to bottom, rgba(0,0,0,0), var(--bg) 55%);z-index:99';
+    ov.innerHTML='<div style="text-align:center;padding-bottom:8vh;max-width:420px;width:90%"><div style="font-size:17px;font-weight:600;margin-bottom:6px">订阅解锁全文</div><div style="font-size:13px;opacity:.75;margin-bottom:14px">免费邮箱订阅后，即可浏览全站完整内容（AI产业链选股表 + 全球流动性看板，每周自动更新）。</div><form id="bsubf" style="display:flex;gap:8px;justify-content:center"><input id="bsube" type="email" required placeholder="you@email.com" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;font-size:13px"><button style="padding:9px 16px;border-radius:8px;border:none;background:#e0913a;color:#fff;font-weight:600;font-size:13px;cursor:pointer">订阅</button></form><div id="bsubm" style="font-size:12px;margin-top:8px;opacity:.7"></div></div>';
+    w.appendChild(ov);
+    document.getElementById('bsubf').addEventListener('submit', function(e){
+      e.preventDefault();
+      var em=document.getElementById('bsube').value.trim(), m=document.getElementById('bsubm');
+      m.textContent='提交中…';
+      fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em})})
+        .then(function(r){return r.json();}).then(function(j){ if(j.ok){ localStorage.setItem(KEY,'1'); w.style.maxHeight=''; w.style.overflow=''; ov.remove(); } else { m.textContent='邮箱格式有误，请重试'; }})
+        .catch(function(){ m.textContent='网络异常，请稍后重试'; });
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
 </body>
 </html>
