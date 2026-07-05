@@ -614,15 +614,15 @@ window.addEventListener('resize',()=>{if(chart)chart.resize();if(wchart)wchart.r
 <script>
 (function(){
   var KEY='brassivo_sub', API='https://api.brassivo.com/subscribe';
-  function subbed(){return document.cookie.indexOf('brassivo_sub=1')>-1||localStorage.getItem(KEY)==='1';}
-  function setsub(){document.cookie='brassivo_sub=1; domain=.brassivo.com; path=/; max-age=31536000; SameSite=Lax';try{localStorage.setItem(KEY,'1');}catch(e){}}
+  function subbed(){return document.cookie.indexOf('brassivo_sub=1')>-1||document.cookie.indexOf('brassivo_pro=1')>-1;}
+  function setsub(){document.cookie='brassivo_sub=1; domain=.brassivo.com; path=/; max-age=2592000; SameSite=Lax';}
   if(subbed()) return;
   function init(){
     var w=document.querySelector('.wrap'); if(!w) return;
     w.style.maxHeight='110vh'; w.style.overflow='hidden'; w.style.position='relative';
     var ov=document.createElement('div');
     ov.style.cssText='position:absolute;left:0;right:0;bottom:0;height:60vh;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(to bottom, rgba(0,0,0,0), var(--bg) 55%);z-index:99';
-    ov.innerHTML='<div style="text-align:center;padding-bottom:8vh;max-width:420px;width:90%"><div style="font-size:17px;font-weight:600;margin-bottom:6px">订阅解锁全文</div><div style="font-size:13px;opacity:.75;margin-bottom:14px">免费邮箱订阅后，即可浏览全站完整内容（AI产业链选股表 + 全球流动性看板，每周自动更新）。</div><form id="bsubf" style="display:flex;gap:8px;justify-content:center"><input id="bsube" type="email" required placeholder="you@email.com" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;font-size:13px"><button style="padding:9px 16px;border-radius:8px;border:none;background:#e0913a;color:#fff;font-weight:600;font-size:13px;cursor:pointer">订阅</button></form><div id="bsubm" style="font-size:12px;margin-top:8px;opacity:.7"></div></div>';
+    ov.innerHTML='<div style="text-align:center;padding-bottom:8vh;max-width:420px;width:90%"><div style="font-size:17px;font-weight:600;margin-bottom:6px">解锁全文 · 首月免费</div><div style="font-size:13px;opacity:.75;margin-bottom:14px">留下邮箱即可免费试用1个月，浏览全站完整内容（AI产业链选股表 + 全球流动性看板，每周自动更新）。到期后可订阅专业版（$24.9/月 · 年付$189）。</div><form id="bsubf" style="display:flex;gap:8px;justify-content:center"><input id="bsube" type="email" required placeholder="you@email.com" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;font-size:13px"><button style="padding:9px 16px;border-radius:8px;border:none;background:#e0913a;color:#fff;font-weight:600;font-size:13px;cursor:pointer">免费试用</button></form><div id="bsubm" style="font-size:12px;margin-top:8px;opacity:.7"></div><div style="font-size:12px;margin-top:10px"><a href="https://brassivo.com/#" style="color:inherit;opacity:.7">已有激活 Key？去主页激活 →</a></div></div>';
     w.appendChild(ov);
     document.getElementById('bsubf').addEventListener('submit', function(e){
       e.preventDefault();
