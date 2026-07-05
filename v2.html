@@ -66,6 +66,22 @@
   .kcard .s{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
   .pos{color:var(--green)}.neg{color:var(--red)}
 
+  /* ===== 事件日历 ===== */
+  .evrow{display:flex;gap:10px;overflow-x:auto;margin-top:10px;padding-bottom:4px}
+  .ev{min-width:180px;max-width:230px;flex-shrink:0;background:#0a1730;border:1px solid var(--grid);border-radius:9px;padding:10px 12px;position:relative}
+  .ev.today{border-color:var(--warn)}
+  .ev.past{opacity:.35}
+  .ev .d{font-size:12px;font-weight:700;color:var(--idx)}
+  .ev .d .wd{color:var(--muted);font-weight:400;font-size:11px;margin-left:4px}
+  .ev .n{font-size:13px;font-weight:600;margin:4px 0;line-height:1.4}
+  .ev .note{font-size:11px;color:var(--muted);line-height:1.5}
+  .ev .cd{position:absolute;top:9px;right:10px;font-size:10px;color:var(--warn)}
+  .evtag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;border:1px solid;margin-right:4px;vertical-align:middle}
+  .evtag.src{color:#e5654a;border-color:#8a3a2c}
+  .evtag.prc{color:var(--warn);border-color:#8a7326}
+  .evtag.obs{color:var(--muted);border-color:var(--grid)}
+  .evtag.tbd{color:var(--muted);border-color:var(--grid);border-style:dashed}
+
   /* ===== 第二层：传导链 ===== */
   .chain{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
   .chain .step{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--grid);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
@@ -186,6 +202,12 @@
 
   <div class="keys" id="keys"></div>
 
+  <!-- 一b、事件日历 -->
+  <div class="panelblk" id="evblk" style="display:none">
+    <div style="font-size:13px;font-weight:600">未来流动性事件 <span class="lbl" style="margin-left:6px">标签：<span class="evtag src">源头</span>=改变流动性供给 · <span class="evtag prc">定价</span>=改变利率预期 · <span class="evtag obs">观察</span>=验证信号</span></div>
+    <div class="evrow" id="evrow"></div>
+  </div>
+
   <!-- 二、逻辑链 -->
   <h2 id="chain">流动性传导链 <span class="no">点击任一环节看明细 · 信号：<span class="dot bull"></span>宽松 <span class="dot warn"></span>观察 <span class="dot bear"></span>收紧</span></h2>
   <div class="hint">水从哪来（①央行/财政）→ 流到哪里（②利率与通胀）→ 汇率确认（③美元/人民币）→ 资产温度（④哨兵资产）。①是因，④是果。<br>
@@ -293,7 +315,8 @@ document.getElementById('gpin').style.left=Math.min(97,Math.max(2,tight/2*100))+
   if(!hist.length)return;
   const prev=hist[hist.length-1].tight, dv=+(tight-prev).toFixed(2);
   const gp=document.getElementById('gprev');
-  gp.style.left=Math.min(97,Math.max(2,prev/2*100))+'%'; gp.style.display='';
+  /* 上期与当期读数相同→不显示幽灵指针，避免误读 */
+  if(Math.abs(dv)>0.05){gp.style.left=Math.min(97,Math.max(2,prev/2*100))+'%'; gp.style.display='';}
   const gd=document.getElementById('gdelta'); gd.style.display='';
   if(dv<-0.05){gd.className='gdelta loose';gd.textContent='▼ 较上期转松 '+prev.toFixed(2)+'→'+tight.toFixed(2);}
   else if(dv>0.05){gd.className='gdelta tightn';gd.textContent='▲ 较上期转紧 '+prev.toFixed(2)+'→'+tight.toFixed(2);}
@@ -326,6 +349,33 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
     <div class="kcard"><div class="k">中国锚 M1 同比（"M1定买卖"）</div>
       <div class="v ${cn&&cn.m1>=0?'pos':'neg'}">${cn?cn.m1+'%':'—'}</div>
       <div class="s">M2 ${cn?cn.m2+'%':'—'} · 决定A股/港股相对表现</div></div>`;
+})();
+
+/* ---------- 一b、事件日历 ---------- */
+(function(){
+  const evs=S&&S.events;
+  if(!evs||!evs.length)return;
+  const today=new Date().toISOString().slice(0,10);
+  const wd=['日','一','二','三','四','五','六'];
+  const cls={'源头':'src','定价':'prc','观察':'obs'};
+  /* 只显示未过期超过2天的事件 */
+  const show=evs.filter(e=>e.d>=addDays(today,-2)).sort((a,b)=>a.d<b.d?-1:1);
+  function addDays(ds,n){const d=new Date(ds);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+  if(!show.length)return;
+  document.getElementById('evblk').style.display='';
+  document.getElementById('evrow').innerHTML=show.map(e=>{
+    const dt=new Date(e.d);
+    const days=Math.round((dt-new Date(today))/86400000);
+    const state=e.d<today?'past':(e.d===today?'today':'');
+    const cd=days>0?('T-'+days):(days===0?'今天':'');
+    return `<div class="ev ${state}">
+      <div class="d">${e.d.slice(5).replace('-','/')}<span class="wd">周${wd[dt.getDay()]}</span></div>
+      ${cd?`<div class="cd">${cd}</div>`:''}
+      <div class="n">${esc(e.name)}</div>
+      <div><span class="evtag ${cls[e.impact]||'obs'}">${esc(e.impact)}</span>${e.confirm?'':'<span class="evtag tbd">待定</span>'}</div>
+      <div class="note" style="margin-top:5px">${esc(e.note)}</div>
+    </div>`;
+  }).join('');
 })();
 
 /* ---------- 二、传导链 ---------- */
