@@ -356,6 +356,9 @@ function render(){
   const leadM = (a.lead_m||0), shiftOn = liqShift && leadM>0;
   const glS = shiftOn ? shiftSeries(LQ.series, leadM) : LQ.series;
   const liqName = LQ.name + (shiftOn?'（前移'+leadM+'月）':'');
+  const fxRaw = (!LQ.isChina && scope==='g3' && DATA.gl3_yoy_fx) ? DATA.gl3_yoy_fx : null;
+  const fxS = fxRaw ? (shiftOn ? shiftSeries(fxRaw, leadM) : fxRaw) : null;
+  const fxName = '固定汇率口径 同比%'+(shiftOn?'（前移'+leadM+'月）':'');
   const troughPts = (LQ.isChina||shiftOn)?[]:DATA.troughs.map(d=>{const i=glS.dates.indexOf(d);return i>=0?[d,glS.values[i]]:null;}).filter(Boolean);
   const si=document.getElementById('shiftinfo');
   if(si)si.textContent = liqShift ? (leadM>0?('蓝线已前移 '+leadM+' 月：右端 overhang = 对 '+mName.replace(/\(.*\)/,'')+' 未来约 '+leadM+' 月的指示'):('该标的对其锚定流动性无显著领先(best_lag≤0)，不前移')) : '';
@@ -364,7 +367,7 @@ function render(){
     backgroundColor:'transparent', animationDuration:500,
     tooltip:{trigger:'axis',backgroundColor:'rgba(14,28,56,.95)',borderColor:col('--grid'),
       textStyle:{color:col('--txt'),fontSize:12},axisPointer:{type:'cross',lineStyle:{color:col('--muted'),type:'dashed'}}},
-    legend:{top:6,textStyle:{color:col('--muted')},data:[liqName,mName+' 价格']},
+    legend:{top:6,textStyle:{color:col('--muted')},data:(fxS?[liqName,fxName,mName+' 价格']:[liqName,mName+' 价格'])},
     grid:{left:58,right:70,top:42,bottom:64},
     xAxis:{type:'time',axisLine:{lineStyle:{color:col('--grid')}},axisLabel:{color:col('--muted')},splitLine:{show:false}},
     yAxis:[
@@ -378,6 +381,8 @@ function render(){
       {name:liqName,type:'line',yAxisIndex:0,showSymbol:false,smooth:true,
        lineStyle:{color:col('--blue'),width:1.6},areaStyle:{color:col('--blue'),opacity:.22},
        markLine:{symbol:'none',silent:true,lineStyle:{color:col('--muted'),opacity:.5},data:[{yAxis:0}]},data:pair(glS)},
+      ...(fxS?[{name:fxName,type:'line',yAxisIndex:0,showSymbol:false,smooth:true,
+       lineStyle:{color:'#a78bfa',width:1.3,type:'dashed'},data:pair(fxS)}]:[]),
       {name:mName+' 价格',type:'line',yAxisIndex:1,showSymbol:false,lineStyle:{color:mCol,width:1.4},data:pair(a)},
       {name:'波谷',type:'scatter',yAxisIndex:0,symbol:'triangle',symbolSize:9,symbolRotate:180,
        itemStyle:{color:col('--red')},data:troughPts,tooltip:{show:false}},
