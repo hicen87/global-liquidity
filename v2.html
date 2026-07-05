@@ -42,6 +42,12 @@
   .gaugebar{flex:1;min-width:220px;max-width:420px}
   .gaugebar .track{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--green),var(--warn) 45%,var(--red));position:relative}
   .gaugebar .pin{position:absolute;top:-5px;width:4px;height:20px;background:#fff;border-radius:2px;box-shadow:0 0 6px rgba(255,255,255,.8)}
+  .gaugebar .pin.ghost{background:rgba(255,255,255,.35);box-shadow:none;width:3px}
+  .gaugebar .pin.ghost::after{content:'上期';position:absolute;top:-15px;left:-12px;font-size:9px;color:var(--muted);white-space:nowrap}
+  .gdelta{font-size:12px;font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid;white-space:nowrap}
+  .gdelta.loose{color:var(--green);border-color:var(--green)}
+  .gdelta.tightn{color:var(--red);border-color:var(--red)}
+  .gdelta.flat{color:var(--muted);border-color:var(--grid)}
   .gaugebar .lbls{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px}
   .gauge .reading{font-size:13px}
   .gauge .reading b{font-size:16px}
@@ -164,8 +170,9 @@
     </div>
     <div class="gauge">
       <span class="reading">流动性档位 <b id="regime">—</b></span>
+      <span class="gdelta flat" id="gdelta" style="display:none"></span>
       <div class="gaugebar">
-        <div class="track"><div class="pin" id="gpin" style="left:50%"></div></div>
+        <div class="track"><div class="pin ghost" id="gprev" style="display:none"></div><div class="pin" id="gpin" style="left:50%"></div></div>
         <div class="lbls"><span>中性偏松</span><span>边际收紧</span><span>收紧</span></div>
       </div>
       <span class="reading" style="color:var(--muted);font-size:11px" id="gsub"></span>
@@ -279,6 +286,18 @@ document.getElementById('updated').textContent=S?('定性更新 '+S.updated+(L?(
 document.getElementById('regime').textContent=regime;
 document.getElementById('regime').style.color=rc;
 document.getElementById('gpin').style.left=Math.min(97,Math.max(2,tight/2*100))+'%';
+/* 较上期变化：取 history 中早于本期定性日期的最近一条紧度 */
+(function(){
+  const hist=(S.history||[]).filter(h=>h.d<S.updated);
+  if(!hist.length)return;
+  const prev=hist[hist.length-1].tight, dv=+(tight-prev).toFixed(2);
+  const gp=document.getElementById('gprev');
+  gp.style.left=Math.min(97,Math.max(2,prev/2*100))+'%'; gp.style.display='';
+  const gd=document.getElementById('gdelta'); gd.style.display='';
+  if(dv<-0.05){gd.className='gdelta loose';gd.textContent='▼ 较上期转松 '+prev.toFixed(2)+'→'+tight.toFixed(2);}
+  else if(dv>0.05){gd.className='gdelta tightn';gd.textContent='▲ 较上期转紧 '+prev.toFixed(2)+'→'+tight.toFixed(2);}
+  else{gd.className='gdelta flat';gd.textContent='→ 较上期持平 '+tight.toFixed(2);}
+})();
 document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①源头5项信号均值（数据规则+人工各半）';
 /* 本周要点：拆 oneliner 前几句为bullets */
 (function(){
