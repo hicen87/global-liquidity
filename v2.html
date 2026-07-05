@@ -224,7 +224,7 @@
   </details>
 
   <!-- 三、配置 -->
-  <h2 id="alloc">资产配置 <span class="no">按信号排序：防御(红) → 中性(黄) → 进攻(绿)</span></h2>
+  <h2 id="alloc">资产配置 <span class="no">按信号排序：进攻(绿) → 中性(黄) → 防御(红)</span></h2>
   <div class="alloc">
     <table><tbody id="alloctb"></tbody></table>
     <div class="trig">
@@ -456,7 +456,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
 
 /* ---------- 三、配置 ---------- */
 (function(){
-  const _po={r:0,y:1,g:2};
+  const _po={g:0,y:1,r:2};
   const rows=S.allocation.slice().sort((a,b)=>_po[pillClass(a[1])]-_po[pillClass(b[1])]);
   document.getElementById('alloctb').innerHTML=rows.map(r=>{
     const p=P&&P.allocation&&P.allocation[r[0]];
