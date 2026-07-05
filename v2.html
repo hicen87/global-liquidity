@@ -344,9 +344,20 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
     rows.forEach(r=>cnt[r.sig]!==undefined&&cnt[r.sig]++);
     const worst=cnt.bear>0?'bear':cnt.warn>0?'warn':'bull';
     const chgN=rows.filter(r=>r.bd).length;
+    /* 环节方向角标：本期 vs prev 的信号均值（bear2/warn1/bull0） */
+    let dirBd='';
+    if(P&&P.indicators){
+      const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+      const cur=avg(rows.map(r=>tw[r.sig]??1));
+      const prv=avg(rows.map(r=>P.indicators[r.k]?tw[P.indicators[r.k][0]]??1:null).filter(x=>x!==null));
+      if(cur!==null&&prv!==null){
+        const dv=cur-prv;
+        dirBd=dv>0.01?'<span class="chg down" title="较上期转紧">▲紧</span>':dv<-0.01?'<span class="chg up" title="较上期转松">▼松</span>':'';
+      }
+    }
     html+=`<div class="step" data-pre="${st.pre}">
       <div class="sn">${esc(st.pre)} · ${esc(st.desc)}</div>
-      <div class="sname"><span class="dot ${worst}"></span> ${esc(st.name)}</div>
+      <div class="sname"><span class="dot ${worst}"></span> ${esc(st.name)}${dirBd}</div>
       <div class="sig">${cnt.bear?`<span><span class="dot bear"></span>${cnt.bear}</span>`:''}${cnt.warn?`<span><span class="dot warn"></span>${cnt.warn}</span>`:''}${cnt.bull?`<span><span class="dot bull"></span>${cnt.bull}</span>`:''}<span>${rows.length}项${chgN?` · <b style="color:#bc8cff">${chgN}项有变</b>`:''}</span></div>
     </div>`;
     if(i<3)html+='<div class="arrow">→</div>';
