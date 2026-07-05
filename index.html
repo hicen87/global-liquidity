@@ -13,23 +13,24 @@
 <meta property="og:description" content="G3/G4央行流动性、美元净流动性、传导链与资产配置立场，每周自动更新。">
 <meta property="og:url" content="https://investment.brassivo.com/">
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "6597cbc9c2684202988e6845c1ba671b"}'></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
-<script src="data.js"></script>
-<script src="data_weekly.js"></script>
-<script src="summary.js"></script>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<script defer src="data.js"></script>
+<script defer src="data_weekly.js"></script>
+<script defer src="summary.js"></script>
 <style>
   :root{
-    --bg:#0a1428; --panel:#0e1c38; --grid:#1d3357; --txt:#cdd9ee;
-    --muted:#7e8fb0; --blue:#3a7bd5; --gold:#e8c46a; --idx:#4dd0e1; --cmd:#e67e22;
-    --red:#c0392b; --green:#2ec27e; --warn:#e2b24a;
+    --bg:#0f1115; --panel:#1a1d24; --grid:#2c313c; --txt:#e6e8ee;
+    --muted:#9aa3b2; --blue:#5b8dd9; --gold:#e8c46a; --idx:#4dd0e1; --cmd:#e67e22;
+    --red:#e2554a; --green:#3a9b78; --warn:#e0913a;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--txt);font-family:"Microsoft YaHei","Segoe UI",system-ui,sans-serif}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
   .wrap{max-width:1080px;margin:0 auto;padding:16px 18px 60px}
   a{color:var(--blue)}
 
   /* 顶部导航 */
-  nav{position:sticky;top:0;z-index:50;background:rgba(10,20,40,.92);backdrop-filter:blur(6px);
+  nav{position:sticky;top:0;z-index:50;background:rgba(15,17,21,.92);backdrop-filter:blur(6px);
       border-bottom:1px solid var(--grid);display:flex;gap:4px;padding:10px 18px;align-items:center;overflow-x:auto}
   nav .brand{font-size:14px;font-weight:700;margin-right:12px;white-space:nowrap}
   nav a{color:var(--muted);text-decoration:none;font-size:13px;padding:5px 10px;border-radius:6px;white-space:nowrap}
@@ -41,7 +42,7 @@
   .hint{color:var(--muted);font-size:12px;margin-bottom:12px;line-height:1.6}
 
   /* ===== 第一层：结论横幅 ===== */
-  .hero{background:linear-gradient(160deg,#122650,#0e1c38);border:1px solid var(--grid);border-radius:14px;padding:20px 22px;margin-top:16px}
+  .hero{background:linear-gradient(160deg,#21252e,#1a1d24);border:1px solid var(--grid);border-radius:14px;padding:20px 22px;margin-top:16px}
   .hero .row1{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .stancebig{font-size:22px;font-weight:800;letter-spacing:.5px}
   .stancetag{background:var(--red);color:#fff;font-size:12px;padding:4px 12px;border-radius:20px;font-weight:600}
@@ -76,7 +77,7 @@
 
   /* ===== 事件日历 ===== */
   .evrow{display:flex;gap:10px;overflow-x:auto;margin-top:10px;padding-bottom:4px}
-  .ev{min-width:180px;max-width:230px;flex-shrink:0;background:#0a1730;border:1px solid var(--grid);border-radius:9px;padding:10px 12px;position:relative}
+  .ev{min-width:180px;max-width:230px;flex-shrink:0;background:#14171d;border:1px solid var(--grid);border-radius:9px;padding:10px 12px;position:relative}
   .ev.today{border-color:var(--warn)}
   .ev.past{opacity:.35}
   .ev .d{font-size:12px;font-weight:700;color:var(--idx)}
@@ -94,7 +95,7 @@
   .chain{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
   .chain .step{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--grid);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
   .chain .step:hover{border-color:var(--blue)}
-  .chain .step.open{border-color:var(--blue);background:#13254a}
+  .chain .step.open{border-color:var(--blue);background:#21252e}
   .chain .arrow{align-self:center;color:var(--muted);font-size:16px}
   .chain .sn{font-size:12px;color:var(--muted)}
   .chain .sname{font-size:14px;font-weight:700;margin:3px 0}
@@ -104,7 +105,7 @@
   .chaindetail{display:none;background:var(--panel);border:1px solid var(--blue);border-radius:10px;margin-top:10px;padding:6px 14px}
   .chaindetail.show{display:block}
   .chaindetail table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
-  .chaindetail td{padding:8px 8px;border-bottom:1px solid #16294b;line-height:1.6;word-break:break-word;overflow-wrap:anywhere;vertical-align:top}
+  .chaindetail td{padding:8px 8px;border-bottom:1px solid #2c313c;line-height:1.6;word-break:break-word;overflow-wrap:anywhere;vertical-align:top}
   .chaindetail tr:last-child td{border-bottom:none}
   .chaindetail td:first-child{font-weight:600;width:26%}
   .chaindetail td:nth-child(2){color:var(--idx);width:36%}
@@ -115,7 +116,7 @@
 
   /* 商品时钟 */
   .clockrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-  .clockrow .cstep{flex:1;min-width:110px;text-align:center;padding:8px 6px;border:1px solid var(--grid);border-radius:8px;background:#0a1730;font-size:12px;color:var(--muted)}
+  .clockrow .cstep{flex:1;min-width:110px;text-align:center;padding:8px 6px;border:1px solid var(--grid);border-radius:8px;background:#14171d;font-size:12px;color:var(--muted)}
   .clockrow .cstep.active{border-color:var(--red);color:var(--txt);background:rgba(192,57,43,.12)}
   .clockrow .carrow{align-self:center;color:var(--muted)}
   .clocknote{color:var(--muted);font-size:11px;margin-top:6px;line-height:1.6}
@@ -125,16 +126,16 @@
   details.blk summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--txt)}
   details.blk summary .sub{color:var(--muted);font-weight:400;font-size:11px;margin-left:8px}
   .cyccards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:12px}
-  .cyc{background:#0a1730;border:1px solid var(--grid);border-radius:8px;padding:10px 12px}
+  .cyc{background:#14171d;border:1px solid var(--grid);border-radius:8px;padding:10px 12px}
   .cyc .k{color:var(--muted);font-size:11px}
   .cyc .st{font-size:12px;font-weight:600;margin-top:4px;line-height:1.5}
-  .pbar{height:5px;background:#132447;border-radius:3px;margin-top:8px;overflow:hidden}
+  .pbar{height:5px;background:#2c313c;border-radius:3px;margin-top:8px;overflow:hidden}
   .pbar i{display:block;height:100%;border-radius:3px}
 
   /* ===== 第三层：配置 ===== */
   .alloc{background:var(--panel);border:1px solid var(--grid);border-radius:12px;padding:14px 18px}
   .alloc table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
-  .alloc td{padding:8px 8px;border-bottom:1px solid #16294b;line-height:1.6;word-break:break-word;overflow-wrap:anywhere;vertical-align:middle}
+  .alloc td{padding:8px 8px;border-bottom:1px solid #2c313c;line-height:1.6;word-break:break-word;overflow-wrap:anywhere;vertical-align:middle}
   .alloc tr:last-child td{border-bottom:none}
   .alloc td:first-child{width:17%;font-weight:600}
   .alloc td:nth-child(2){width:19%}
@@ -144,11 +145,11 @@
   .pill.y{color:#e2b24a;border-color:#8a7326;background:rgba(226,178,74,.08)}
   .pill.r{color:#e5654a;border-color:#8a3a2c;background:rgba(229,101,74,.08)}
   .trig{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px}
-  .trig div{flex:1;min-width:280px;background:#0a1730;border-radius:8px;padding:10px 12px;line-height:1.7}
+  .trig div{flex:1;min-width:280px;background:#14171d;border-radius:8px;padding:10px 12px;line-height:1.7}
   .risk{color:var(--muted);font-size:11.5px;line-height:1.8;margin-top:8px}
 
   /* ===== 第四层：数据 ===== */
-  .cbar{background:#0a1730;border:1px solid var(--grid);border-radius:8px;padding:10px 12px;font-size:12px;margin:10px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .cbar{background:#14171d;border:1px solid var(--grid);border-radius:8px;padding:10px 12px;font-size:12px;margin:10px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   .cbar .ok{color:var(--green);font-weight:600}.cbar .bad{color:var(--red);font-weight:600}
   .cbar ul{margin:4px 0 0;padding-left:18px;color:#e08a7a;width:100%;line-height:1.6}
   #weekchart{height:260px}
@@ -156,14 +157,14 @@
   .panelblk{background:var(--panel);border:1px solid var(--grid);border-radius:12px;padding:14px 18px;margin-top:12px}
   .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
   .lbl{color:var(--muted);font-size:12px}
-  .seg{display:inline-flex;background:#0a1730;border:1px solid var(--grid);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .seg{display:inline-flex;background:#14171d;border:1px solid var(--grid);border-radius:8px;overflow:hidden;flex-wrap:wrap}
   .seg button{background:transparent;color:var(--muted);border:0;padding:6px 12px;cursor:pointer;font-size:12.5px}
   .seg button.on{background:var(--blue);color:#fff}
   .row{display:flex;align-items:center;gap:10px;padding:4px 0;cursor:pointer;border-radius:6px}
-  .row:hover{background:#13254a}
+  .row:hover{background:#21252e}
   .row .nm{width:96px;font-size:13px;flex-shrink:0}
   .row .tag{width:130px;font-size:11px;color:var(--muted);flex-shrink:0}
-  .row .barwrap{flex:1;height:12px;background:#0a1730;border-radius:6px;overflow:hidden}
+  .row .barwrap{flex:1;height:12px;background:#14171d;border-radius:6px;overflow:hidden}
   .row .bar{height:100%;border-radius:6px}
   .row .rv{width:52px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
   .foot{color:var(--muted);font-size:11.5px;line-height:1.8;margin-top:30px;border-top:1px solid var(--grid);padding-top:14px}
@@ -179,9 +180,9 @@
 </head>
 <body>
 <nav>
-  <span class="brand">全球流动性看板</span>
+  <a href="https://brassivo.com" class="brand" style="color:var(--txt);text-decoration:none;padding:0">Brassivo <span style="color:var(--muted);font-weight:400">· Liquidity</span></a>
   <a href="#hero">结论</a><a href="#chain">逻辑链</a><a href="#alloc">配置</a><a href="#data">深入数据</a>
-  <a href="https://brassivo.com" style="margin-left:auto">&#8962; Brassivo 首页</a>
+  <a href="https://stocks.brassivo.com" style="margin-left:auto">Stocks 选股表 →</a>
 </nav>
 <div class="wrap">
 
@@ -276,6 +277,7 @@
 </div>
 
 <script>
+window.addEventListener('DOMContentLoaded',function(){
 const col=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const fmt=v=>(v>=0?'+':'')+(+v).toFixed(2);
@@ -599,6 +601,7 @@ function renderChart(){
 
 document.getElementById('upd').textContent=' 数据更新：'+DATA.updated;
 window.addEventListener('resize',()=>{if(chart)chart.resize();if(wchart)wchart.resize();});
+});
 </script>
 <script>
 (function(){
