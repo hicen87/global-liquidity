@@ -4,18 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>全球流动性周期看板</title>
-<meta name="description" content="全球流动性周期看板：G3/G4央行资产负债表同比、美元净流动性（WALCL−TGA−RRP）周频序列、五层周期定位与大类资产配置立场，每周自动更新。">
+<meta name="description" content="全球流动性周期看板：G3/G4央行资产负债表同比、美元净流动性（WALCL−TGA−RRP）周频序列、流动性传导链、事件日历与大类资产配置立场，每周自动更新。">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://investment.brassivo.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Brassivo Research">
 <meta property="og:title" content="Global Liquidity · 全球流动性周期看板">
-<meta property="og:description" content="G3/G4央行流动性、美元净流动性与资产配置立场，每周自动更新。">
+<meta property="og:description" content="G3/G4央行流动性、美元净流动性、传导链与资产配置立场，每周自动更新。">
 <meta property="og:url" content="https://investment.brassivo.com/">
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "6597cbc9c2684202988e6845c1ba671b"}'></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="data.js"></script>
 <script src="data_weekly.js"></script>
 <script src="summary.js"></script>
@@ -23,516 +21,584 @@
   :root{
     --bg:#0a1428; --panel:#0e1c38; --grid:#1d3357; --txt:#cdd9ee;
     --muted:#7e8fb0; --blue:#3a7bd5; --gold:#e8c46a; --idx:#4dd0e1; --cmd:#e67e22;
-    --red:#c0392b; --green:#2ec27e;
+    --red:#c0392b; --green:#2ec27e; --warn:#e2b24a;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--txt);font-family:"Microsoft YaHei","Segoe UI",system-ui,sans-serif;padding:18px}
-  .wrap{max-width:1280px;margin:0 auto}
-  h1{font-size:20px;font-weight:600;letter-spacing:.5px}
-  .sub{color:var(--muted);font-size:12px;margin-top:4px}
-  .stats{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}
-  .card{background:var(--panel);border:1px solid var(--grid);border-radius:10px;padding:12px 16px;min-width:150px;flex:1}
-  .card .k{color:var(--muted);font-size:12px}
-  .card .v{font-size:22px;font-weight:700;margin-top:4px}
-  .pos{color:var(--green)} .neg{color:var(--red)}
-  .controls{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:6px 0}
-  .seg{display:inline-flex;background:var(--panel);border:1px solid var(--grid);border-radius:8px;overflow:hidden;flex-wrap:wrap}
-  .seg button{background:transparent;color:var(--muted);border:0;padding:7px 13px;cursor:pointer;font-size:13px}
+  body{background:var(--bg);color:var(--txt);font-family:"Microsoft YaHei","Segoe UI",system-ui,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:16px 18px 60px}
+  a{color:var(--blue)}
+
+  /* 顶部导航 */
+  nav{position:sticky;top:0;z-index:50;background:rgba(10,20,40,.92);backdrop-filter:blur(6px);
+      border-bottom:1px solid var(--grid);display:flex;gap:4px;padding:10px 18px;align-items:center;overflow-x:auto}
+  nav .brand{font-size:14px;font-weight:700;margin-right:12px;white-space:nowrap}
+  nav a{color:var(--muted);text-decoration:none;font-size:13px;padding:5px 10px;border-radius:6px;white-space:nowrap}
+  nav a:hover{color:var(--txt);background:var(--panel)}
+  nav .beta{margin-left:auto;font-size:11px;color:var(--warn);border:1px solid var(--warn);border-radius:10px;padding:1px 8px;white-space:nowrap}
+
+  h2{font-size:15px;font-weight:600;margin:34px 0 4px;display:flex;align-items:center;gap:8px}
+  h2 .no{color:var(--muted);font-weight:400;font-size:12px}
+  .hint{color:var(--muted);font-size:12px;margin-bottom:12px;line-height:1.6}
+
+  /* ===== 第一层：结论横幅 ===== */
+  .hero{background:linear-gradient(160deg,#122650,#0e1c38);border:1px solid var(--grid);border-radius:14px;padding:20px 22px;margin-top:16px}
+  .hero .row1{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .stancebig{font-size:22px;font-weight:800;letter-spacing:.5px}
+  .stancetag{background:var(--red);color:#fff;font-size:12px;padding:4px 12px;border-radius:20px;font-weight:600}
+  .hero .date{color:var(--muted);font-size:12px}
+  .gauge{display:flex;align-items:center;gap:14px;margin:16px 0 4px;flex-wrap:wrap}
+  .gaugebar{flex:1;min-width:220px;max-width:420px}
+  .gaugebar .track{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--green),var(--warn) 45%,var(--red));position:relative}
+  .gaugebar .pin{position:absolute;top:-5px;width:4px;height:20px;background:#fff;border-radius:2px;box-shadow:0 0 6px rgba(255,255,255,.8)}
+  .gaugebar .pin.ghost{background:rgba(255,255,255,.35);box-shadow:none;width:3px}
+  .gaugebar .pin.ghost::after{content:'上期';position:absolute;top:-15px;left:-12px;font-size:9px;color:var(--muted);white-space:nowrap}
+  .gdelta{font-size:12px;font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid;white-space:nowrap}
+  .gdelta.loose{color:var(--green);border-color:var(--green)}
+  .gdelta.tightn{color:var(--red);border-color:var(--red)}
+  .gdelta.flat{color:var(--muted);border-color:var(--grid)}
+  .gaugebar .lbls{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px}
+  .gauge .reading{font-size:13px}
+  .gauge .reading b{font-size:16px}
+  .bullets{margin-top:14px;border-top:1px solid var(--grid);padding-top:12px}
+  .bullets .ttl{font-size:12px;color:var(--blue);font-weight:600;margin-bottom:6px}
+  .bullets li{font-size:13px;line-height:1.8;color:var(--txt);margin-left:18px}
+  .bullets details{margin-top:6px}
+  .bullets summary{cursor:pointer;color:var(--muted);font-size:12px}
+  .bullets .full{color:var(--muted);font-size:12px;line-height:1.8;margin-top:6px}
+
+  /* 关键数字卡 */
+  .keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+  .kcard{background:var(--panel);border:1px solid var(--grid);border-radius:10px;padding:12px 16px}
+  .kcard .k{color:var(--muted);font-size:12px}
+  .kcard .v{font-size:22px;font-weight:700;margin-top:4px}
+  .kcard .s{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+  .pos{color:var(--green)}.neg{color:var(--red)}
+
+  /* ===== 事件日历 ===== */
+  .evrow{display:flex;gap:10px;overflow-x:auto;margin-top:10px;padding-bottom:4px}
+  .ev{min-width:180px;max-width:230px;flex-shrink:0;background:#0a1730;border:1px solid var(--grid);border-radius:9px;padding:10px 12px;position:relative}
+  .ev.today{border-color:var(--warn)}
+  .ev.past{opacity:.35}
+  .ev .d{font-size:12px;font-weight:700;color:var(--idx)}
+  .ev .d .wd{color:var(--muted);font-weight:400;font-size:11px;margin-left:4px}
+  .ev .n{font-size:13px;font-weight:600;margin:4px 0;line-height:1.4}
+  .ev .note{font-size:11px;color:var(--muted);line-height:1.5}
+  .ev .cd{position:absolute;top:9px;right:10px;font-size:10px;color:var(--warn)}
+  .evtag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;border:1px solid;margin-right:4px;vertical-align:middle}
+  .evtag.src{color:#e5654a;border-color:#8a3a2c}
+  .evtag.prc{color:var(--warn);border-color:#8a7326}
+  .evtag.obs{color:var(--muted);border-color:var(--grid)}
+  .evtag.tbd{color:var(--muted);border-color:var(--grid);border-style:dashed}
+
+  /* ===== 第二层：传导链 ===== */
+  .chain{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+  .chain .step{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--grid);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
+  .chain .step:hover{border-color:var(--blue)}
+  .chain .step.open{border-color:var(--blue);background:#13254a}
+  .chain .arrow{align-self:center;color:var(--muted);font-size:16px}
+  .chain .sn{font-size:12px;color:var(--muted)}
+  .chain .sname{font-size:14px;font-weight:700;margin:3px 0}
+  .chain .sig{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%}
+  .dot.bull{background:var(--green)}.dot.warn{background:var(--warn)}.dot.bear{background:var(--red)}
+  .chaindetail{display:none;background:var(--panel);border:1px solid var(--blue);border-radius:10px;margin-top:10px;padding:6px 14px}
+  .chaindetail.show{display:block}
+  .chaindetail table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+  .chaindetail td{padding:8px 8px;border-bottom:1px solid #16294b;line-height:1.6;word-break:break-word;overflow-wrap:anywhere;vertical-align:top}
+  .chaindetail tr:last-child td{border-bottom:none}
+  .chaindetail td:first-child{font-weight:600;width:26%}
+  .chaindetail td:nth-child(2){color:var(--idx);width:36%}
+  .chaindetail td:last-child{color:var(--muted)}
+  .chg{font-size:10px;padding:0 5px;border-radius:8px;border:1px solid;margin-left:5px;font-weight:600;white-space:nowrap}
+  .chg.mod{color:#bc8cff;border-color:#bc8cff}.chg.add{color:var(--idx);border-color:var(--idx)}
+  .chg.up{color:var(--green);border-color:var(--green)}.chg.down{color:var(--red);border-color:var(--red)}
+
+  /* 商品时钟 */
+  .clockrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .clockrow .cstep{flex:1;min-width:110px;text-align:center;padding:8px 6px;border:1px solid var(--grid);border-radius:8px;background:#0a1730;font-size:12px;color:var(--muted)}
+  .clockrow .cstep.active{border-color:var(--red);color:var(--txt);background:rgba(192,57,43,.12)}
+  .clockrow .carrow{align-self:center;color:var(--muted)}
+  .clocknote{color:var(--muted);font-size:11px;margin-top:6px;line-height:1.6}
+
+  /* 周期卡（折叠） */
+  details.blk{background:var(--panel);border:1px solid var(--grid);border-radius:10px;margin-top:12px;padding:12px 16px}
+  details.blk summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--txt)}
+  details.blk summary .sub{color:var(--muted);font-weight:400;font-size:11px;margin-left:8px}
+  .cyccards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:12px}
+  .cyc{background:#0a1730;border:1px solid var(--grid);border-radius:8px;padding:10px 12px}
+  .cyc .k{color:var(--muted);font-size:11px}
+  .cyc .st{font-size:12px;font-weight:600;margin-top:4px;line-height:1.5}
+  .pbar{height:5px;background:#132447;border-radius:3px;margin-top:8px;overflow:hidden}
+  .pbar i{display:block;height:100%;border-radius:3px}
+
+  /* ===== 第三层：配置 ===== */
+  .alloc{background:var(--panel);border:1px solid var(--grid);border-radius:12px;padding:14px 18px}
+  .alloc table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+  .alloc td{padding:8px 8px;border-bottom:1px solid #16294b;line-height:1.6;word-break:break-word;overflow-wrap:anywhere;vertical-align:middle}
+  .alloc tr:last-child td{border-bottom:none}
+  .alloc td:first-child{width:17%;font-weight:600}
+  .alloc td:nth-child(2){width:19%}
+  .alloc td:last-child{color:var(--muted)}
+  .pill{display:inline-block;padding:3px 12px;border-radius:16px;font-size:12px;font-weight:600;border:1px solid;white-space:nowrap}
+  .pill.g{color:#46c583;border-color:#2f7d55;background:rgba(70,197,131,.08)}
+  .pill.y{color:#e2b24a;border-color:#8a7326;background:rgba(226,178,74,.08)}
+  .pill.r{color:#e5654a;border-color:#8a3a2c;background:rgba(229,101,74,.08)}
+  .trig{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px}
+  .trig div{flex:1;min-width:280px;background:#0a1730;border-radius:8px;padding:10px 12px;line-height:1.7}
+  .risk{color:var(--muted);font-size:11.5px;line-height:1.8;margin-top:8px}
+
+  /* ===== 第四层：数据 ===== */
+  .cbar{background:#0a1730;border:1px solid var(--grid);border-radius:8px;padding:10px 12px;font-size:12px;margin:10px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .cbar .ok{color:var(--green);font-weight:600}.cbar .bad{color:var(--red);font-weight:600}
+  .cbar ul{margin:4px 0 0;padding-left:18px;color:#e08a7a;width:100%;line-height:1.6}
+  #weekchart{height:260px}
+  #chart{height:480px}
+  .panelblk{background:var(--panel);border:1px solid var(--grid);border-radius:12px;padding:14px 18px;margin-top:12px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+  .lbl{color:var(--muted);font-size:12px}
+  .seg{display:inline-flex;background:#0a1730;border:1px solid var(--grid);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .seg button{background:transparent;color:var(--muted);border:0;padding:6px 12px;cursor:pointer;font-size:12.5px}
   .seg button.on{background:var(--blue);color:#fff}
-  .lbl{color:var(--muted);font-size:12px;margin-right:2px}
-  #saveimg{position:fixed;top:14px;right:16px;z-index:999;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 15px;font-size:13px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35)}
-  #saveimg:hover{background:#4a8be0}
-  #saveimg:disabled{opacity:.6;cursor:default}
-  .summary{background:linear-gradient(180deg,#10213f,#0e1c38);border:1px solid var(--grid);border-radius:12px;margin-top:14px;padding:16px 18px}
-  .summary .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .summary h3{font-size:15px;font-weight:600}
-  .summary .stance{background:var(--red);color:#fff;font-size:12px;padding:3px 10px;border-radius:20px}
-  .summary .one{color:var(--txt);font-size:13px;line-height:1.7;margin:10px 0 4px}
-  .summary .cols{display:flex;flex-direction:column;gap:16px;margin-top:8px}
-  .summary .colbox{width:100%}
-  .summary .colttl{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:4px;letter-spacing:.3px}
-  .summary table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
-  .summary td{padding:7px 8px;border-bottom:1px solid #16294b;vertical-align:middle;line-height:1.5;word-break:break-word;overflow-wrap:anywhere}
-  .summary td:first-child{color:var(--txt);font-weight:600;width:24%}
-  .summary td:nth-child(2){color:var(--idx);width:34%}
-  .summary td:last-child{color:var(--muted);width:42%}
-  .summary .alloctab td:first-child{width:15%}
-  .summary .alloctab td:nth-child(2){width:16%}
-  .summary .alloctab td:last-child{width:69%;color:var(--muted)}
-  .summary .pill{display:inline-block;padding:3px 12px;border-radius:16px;font-size:12px;font-weight:600;border:1px solid;white-space:nowrap}
-  .summary .pill.g{color:#46c583;border-color:#2f7d55;background:rgba(70,197,131,.08)}
-  .summary .pill.y{color:#e2b24a;border-color:#8a7326;background:rgba(226,178,74,.08)}
-  .summary .pill.r{color:#e5654a;border-color:#8a3a2c;background:rgba(229,101,74,.08)}
-  .summary .trig{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:12px}
-  .summary .trig div{flex:1;min-width:280px;background:#0a1730;border-radius:8px;padding:8px 10px}
-  .summary .risk{color:var(--muted);font-size:11px;line-height:1.7;margin-top:10px;border-top:1px solid var(--grid);padding-top:8px}
-  details summary{cursor:pointer;color:var(--blue);font-size:12px;margin-top:8px}
-  #weekchart{height:280px;margin-top:10px}
-  #chart{height:560px;background:var(--panel);border:1px solid var(--grid);border-radius:12px;margin-top:10px}
-  .rank{background:var(--panel);border:1px solid var(--grid);border-radius:12px;margin-top:14px;padding:14px 18px}
-  .rank h3{font-size:14px;font-weight:600;margin-bottom:2px}
-  .rank .rsub{color:var(--muted);font-size:11px;margin-bottom:10px}
   .row{display:flex;align-items:center;gap:10px;padding:4px 0;cursor:pointer;border-radius:6px}
   .row:hover{background:#13254a}
   .row .nm{width:96px;font-size:13px;flex-shrink:0}
-  .row .tag{width:120px;font-size:11px;color:var(--muted);flex-shrink:0}
-  .row .barwrap{flex:1;height:14px;background:#0a1730;border-radius:7px;overflow:hidden}
-  .row .bar{height:100%;border-radius:7px}
+  .row .tag{width:130px;font-size:11px;color:var(--muted);flex-shrink:0}
+  .row .barwrap{flex:1;height:12px;background:#0a1730;border-radius:6px;overflow:hidden}
+  .row .bar{height:100%;border-radius:6px}
   .row .rv{width:52px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
-  .clockrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-  .clockrow .step{flex:1;min-width:110px;text-align:center;padding:8px 6px;border:1px solid var(--grid);border-radius:8px;background:#0a1730;font-size:12px;color:var(--muted)}
-  .clockrow .step.active{border-color:var(--red);color:var(--txt);background:rgba(192,57,43,.12)}
-  .clockrow .arrow{align-self:center;color:var(--muted)}
-  .indtab{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;table-layout:fixed}
-  .indtab td{padding:6px 8px;border-bottom:1px solid #16294b;line-height:1.5;word-break:break-word;overflow-wrap:anywhere}
-  .indtab td:first-child{font-weight:600;width:22%}
-  .indtab td:nth-child(2){color:var(--idx);width:34%}
-  .indtab td:last-child{color:var(--muted)}
-  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
-  .dot.bull{background:var(--green)}.dot.warn{background:#e2b24a}.dot.bear{background:var(--red)}
-  .cbar{background:#0a1730;border:1px solid var(--grid);border-radius:8px;padding:10px 12px;font-size:12px;margin:8px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
-  .cbar .ok{color:var(--green);font-weight:600}.cbar .bad{color:var(--red);font-weight:600}
-  .cbar ul{margin:4px 0 0;padding-left:18px;color:#e08a7a;width:100%;line-height:1.6}
-  .pbar{height:5px;background:#0a1730;border-radius:3px;margin-top:8px;overflow:hidden}
-  .pbar i{display:block;height:100%;border-radius:3px}
-  .stalechip{font-size:11px;padding:2px 8px;border-radius:12px;border:1px solid #8a7326;color:#e2b24a}
-  .stalechip.bad{border-color:#8a3a2c;color:#e5654a}
-  .chg{font-size:10px;padding:0 5px;border-radius:8px;border:1px solid;margin-left:5px;font-weight:600;white-space:nowrap;vertical-align:middle}
-  .chg.up{color:var(--green);border-color:var(--green)}
-  .chg.down{color:var(--red);border-color:var(--red)}
-  .chg.mod{color:#bc8cff;border-color:#bc8cff}
-  .chg.add{color:var(--idx);border-color:var(--idx)}
-  .note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:14px;border-top:1px solid var(--grid);padding-top:12px}
-  .note b{color:var(--txt)}
-  @media(max-width:640px){#chart{height:440px}.card .v{font-size:18px}.row .tag{display:none}}
+  .foot{color:var(--muted);font-size:11.5px;line-height:1.8;margin-top:30px;border-top:1px solid var(--grid);padding-top:14px}
+  .foot b{color:var(--txt)}
+  @media(max-width:640px){
+    .chain .arrow{display:none}
+    .chain .step{min-width:calc(50% - 8px)}
+    #chart{height:400px}
+    .stancebig{font-size:18px}
+    .row .tag{display:none}
+  }
 </style>
 </head>
 <body>
-<button id="saveimg">保存为图片</button>
+<nav>
+  <span class="brand">全球流动性看板</span>
+  <a href="#hero">结论</a><a href="#chain">逻辑链</a><a href="#alloc">配置</a><a href="#data">深入数据</a>
+  <a href="https://brassivo.com" style="margin-left:auto">&#8962; Brassivo 首页</a>
+</nav>
 <div class="wrap">
-<a href="https://brassivo.com" style="display:inline-block;font-size:12.5px;color:inherit;opacity:.75;text-decoration:none;margin-bottom:10px;border:1px solid rgba(128,128,128,.35);border-radius:20px;padding:3px 12px" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.75">&#8962; Brassivo 首页</a>
 
-  <h1>全球流动性周期看板 <span style="color:var(--muted);font-weight:400">· 流动性周期框架</span></h1>
-  <div class="sub" id="sub">加载中…</div>
-
-  <div class="stats" id="stats"></div>
-
-  <div class="rank" id="cycleblock" style="display:none">
-    <h3>周期定位与自洽校验</h3>
-    <div class="rsub">五层周期框架 + ①源头→②传导→③确认→④温度计指标链。校验条自动核对：主观紧度打分 ↔ 配置防御度 ↔ 客观净流动性（13周），矛盾即亮红。角标=较上期自动diff：<span class="chg up">▲</span><span class="chg down">▼</span>进度升降 · <span class="chg mod">变</span>措辞/信号/倾向变化 · <span class="chg add">新</span>新增。</div>
-    <div id="checkbar"></div>
-    <div class="stats" id="cyclecards"></div>
-    <div class="rsub" style="margin:8px 0 2px">商品轮动时钟（金银→铜铝→原油=周期尾声）</div>
-    <div id="clockrow" class="clockrow"></div>
-    <div class="rsub" id="clocknote" style="margin:4px 0 0"></div>
-    <table class="indtab" id="indtab"><tbody></tbody></table>
+  <!-- 一、结论 -->
+  <div class="hero" id="hero">
+    <div class="row1">
+      <span class="stancebig">本周立场</span>
+      <span class="stancetag" id="stance">—</span>
+      <span class="date" id="updated"></span>
+    </div>
+    <div class="gauge">
+      <span class="reading">流动性档位 <b id="regime">—</b></span>
+      <span class="gdelta flat" id="gdelta" style="display:none"></span>
+      <div class="gaugebar">
+        <div class="track"><div class="pin ghost" id="gprev" style="display:none"></div><div class="pin" id="gpin" style="left:50%"></div></div>
+        <div class="lbls"><span>中性偏松</span><span>边际收紧</span><span>收紧</span></div>
+      </div>
+      <span class="reading" style="color:var(--muted);font-size:11px" id="gsub"></span>
+    </div>
+    <div class="bullets">
+      <div class="ttl">本周要点</div>
+      <ul id="bullets"></ul>
+      <details><summary>展开完整叙述</summary><div class="full" id="onefull"></div></details>
+    </div>
   </div>
 
-  <div class="summary" id="summary"></div>
+  <div class="keys" id="keys"></div>
 
-  <div class="rank" id="weekly">
-    <h3>美元流动性管道（周频 · 高频前瞻）</h3>
-    <div class="rsub">净流动性 = 美联储总资产 − 财政部TGA − 隔夜逆回购。周频，用来补月度央行数据的及时性。SOFR−IORB 飙升=回购紧张预警；ON RRP 趋零=短端流动性见底。</div>
-    <div class="stats" id="wstats"></div>
+  <!-- 一b、事件日历 -->
+  <div class="panelblk" id="evblk" style="display:none">
+    <div style="font-size:13px;font-weight:600">未来流动性事件 <span class="lbl" style="margin-left:6px">标签：<span class="evtag src">源头</span>=改变流动性供给 · <span class="evtag prc">定价</span>=改变利率预期 · <span class="evtag obs">观察</span>=验证信号</span></div>
+    <div class="evrow" id="evrow"></div>
+  </div>
+
+  <!-- 二、逻辑链 -->
+  <h2 id="chain">流动性传导链 <span class="no">点击任一环节看明细 · 信号：<span class="dot bull"></span>宽松 <span class="dot warn"></span>观察 <span class="dot bear"></span>收紧</span></h2>
+  <div class="hint">水从哪来（①央行/财政）→ 流到哪里（②利率与通胀）→ 汇率确认（③美元/人民币）→ 资产温度（④哨兵资产）。①是因，④是果。<br>
+  环节名旁出现 <span class="chg down">▲紧</span>/<span class="chg up">▼松</span> = 该环节信号较上期转向（本期无=信号与上期相同）；<span class="chg mod">N项有变</span> = 仅读数/措辞更新、信号未变。</div>
+  <div class="chain" id="chainrow"></div>
+  <div class="chaindetail" id="chaindetail"><table><tbody></tbody></table></div>
+
+  <div style="font-size:13px;font-weight:600;margin-top:22px">商品轮动时钟 <span class="lbl" style="font-weight:400;margin-left:6px">一轮周期里商品按固定顺序接力上涨——看轮到谁，就知道周期走到哪；③原油启动 = 周期尾声警报</span></div>
+  <div class="clockrow" id="clockrow"></div>
+  <div class="clocknote" id="clocknote"></div>
+
+  <details class="blk"><summary>五层周期定位<span class="sub">长周期背景板，变化慢，每周只微调措辞</span></summary>
+    <div class="cyccards" id="cyccards"></div>
+  </details>
+
+  <!-- 三、配置 -->
+  <h2 id="alloc">资产配置 <span class="no">按信号排序：进攻(绿) → 中性(黄) → 防御(红)</span></h2>
+  <div class="alloc">
+    <table><tbody id="alloctb"></tbody></table>
+    <div class="trig">
+      <div><b style="color:var(--green)">什么时候加风险</b><br><span id="addsig"></span></div>
+      <div><b style="color:var(--red)">什么时候减风险</b><br><span id="redsig"></span></div>
+    </div>
+    <details><summary style="cursor:pointer;color:var(--blue);font-size:12px;margin-top:8px">风险与反证 / 免责</summary><div class="risk" id="risks"></div></details>
+  </div>
+
+  <!-- 四、深入数据 -->
+  <h2 id="data">深入数据 <span class="no">自洽校验 + 周频管道 + 月度叠加图</span></h2>
+  <div id="checkbar"></div>
+
+  <div class="panelblk">
+    <div style="font-size:13px;font-weight:600">美元流动性管道（周频）<span class="lbl" style="margin-left:8px">净流动性 = 美联储总资产 − 财政部账户TGA − 逆回购RRP</span></div>
+    <div class="keys" id="wkeys" style="margin-top:10px"></div>
     <div id="weekchart"></div>
   </div>
 
-  <div class="controls">
-    <span class="lbl">口径</span>
-    <div class="seg" id="scope">
-      <button data-v="g3" class="on">美欧日（G3原版）</button>
-      <button data-v="g4">＋中国（增强）</button>
+  <div class="panelblk">
+    <div style="font-size:13px;font-weight:600">全球流动性 vs 资产价格（月度）</div>
+    <div class="controls">
+      <span class="lbl">口径</span>
+      <div class="seg" id="scope"><button data-v="g3" class="on">G3 美欧日</button><button data-v="g4">G4 +中国</button></div>
+      <span class="lbl" id="fxhint">蓝实线=现汇 · 紫虚线=固定汇率（两线张开的距离=汇率贡献）</span>
     </div>
-  </div>
-  <div class="controls" id="assetbar"></div>
-  <div class="controls"><span class="lbl">周期锚点</span><div class="seg" id="cyclebar"></div><span class="lbl" id="cycleinfo"></span></div>
-  <div class="controls"><span class="lbl">流动性对齐</span><div class="seg" id="shiftbar">
-    <button data-v="0" class="on">真实日期（同步）</button>
-    <button data-v="1">流动性前移（前瞻叠加）</button>
-  </div><span class="lbl" id="shiftinfo"></span></div>
-
-  <div id="chart"></div>
-
-  <div class="rank">
-    <h3>资产对流动性的领先/滞后敏感度</h3>
-    <div class="rsub">各资产 12 月同比 与 G3 流动性同比 的最佳正相关（扫描 -6~+18 月）。「流动性领先N月」= 流动性变化领先该资产约 N 月。点击切换主图。</div>
-    <div id="ranklist"></div>
+    <div class="controls" id="assetbar"></div>
+    <div id="chart"></div>
   </div>
 
-  <div class="note">
-    <b>读图：</b>蓝色面积 = 央行资产负债表合计的 12 月同比（%，左轴）；彩色线 = 所选资产价格（右轴）。底部红弧 = 3.5年周期，红三角 = 实际波谷。<br>
-    <b>分资产锚定：</b>中国资产（沪深300/恒生）自动叠加<b>中国 M1 同比</b>（“M1定买卖”）；美股/大宗/金银叠加<b>全球流动性</b>；口径开关仅对全球基准生效。<br>
-    <b>信条：</b>流动性同比飙升 → 随后风险资产/大宗上涨；同比转负 = 边际转弱预警。<br>
-    <b>相关性提醒：</b>全样本相关系数普遍偏低且受regime影响（如近年黄金/美股走自身逻辑），此排行用于横向比较"谁对流动性更敏感"，非择时信号。大宗（原油/铜/商品）领先关系最清晰。<br>
-    <b>数据源：</b>FRED（央行表/汇率）、AkShare（中国央行）、Yahoo Finance（指数/大宗/金银）。<span id="upd"></span>
+  <details class="blk"><summary>资产对流动性的领先/滞后敏感度<span class="sub">扫描历史最优滞后的相关系数；|r|&lt;0.15 视为无稳定关系（置灰）</span></summary>
+    <div id="ranklist" style="margin-top:10px"></div>
+  </details>
+
+  <div class="foot">
+    <b>怎么读这个页面：</b>第一屏是结论（立场+档位+本周变化）；传导链解释"为什么"；配置表是"怎么做"；深入数据供自查。
+    月度指标看趋势（领先市场约3-6个月），周频指标看当下水位；两者背离时，先查是不是美元汇率在动（对比蓝实线与紫虚线）。<br>
+    <b>数据源：</b>FRED（央行资产负债表/汇率）、AkShare（中国央行）、Yahoo Finance（指数/大宗/金银）。<span id="upd"></span><br>
+    框架推演，非投资建议。<a href="v1.html">旧版看板(归档)</a>
   </div>
 </div>
 
 <script>
-const C = getComputedStyle(document.documentElement);
-const col = n => n.startsWith('--') ? C.getPropertyValue(n).trim() : n;
-let DATA=null, scope='g3', metal='gold', cycleMode='manual', liqShift=false;
-const chart = echarts.init(document.getElementById('chart'), null, {renderer:'canvas'});
+const col=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const fmt=v=>(v>=0?'+':'')+(+v).toFixed(2);
+const pm=v=>(v>=0?'+':'')+v;
+const DATA=window.DATA, S=window.SUMMARY, W=window.WEEKLY, L=W&&W.latest;
+let scope='g3', metal='gold', chart=null, wchart=null;
+const GROUPS=['贵金属','大宗','指数'];
+const GCOL={'贵金属':col('--gold'),'大宗':col('--cmd'),'指数':col('--idx')};
+const assetColor=g=>GCOL[g]||col('--idx');
+const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t)?'r':(/超配|占优|长配|加仓|留子弹|留弹药|回补|买入|重配|抄底/.test(t)?'g':'y');
 
-const GROUPS=['贵金属','指数','大宗'];
-function assetColor(g){return g==='贵金属'?col('--gold'):g==='指数'?col('--idx'):col('--cmd');}
-function fmt(n){return n>=0?'+'+n.toFixed(2):n.toFixed(2);}
-function lastVal(a){for(let i=a.values.length-1;i>=0;i--){if(a.values[i]!=null)return a.values[i];}return null;}
-function lagTag(L){return L>0?('流动性领先'+L+'月'):(L<0?('滞后'+(-L)+'月'):'同步');}
-
-function activeLiq(){
-  const a=DATA.assets[metal];
-  if(a.liq==='china' && DATA.china_liq){
-    return {series:DATA.china_liq.m1_yoy, name:'中国 M1 同比%', isChina:true, latest:DATA.china_liq.latest.m1};
+/* ---------- 指标链数据（含AUTO填充+规则打分覆盖，与旧版口径一致） ---------- */
+const RS=W&&W.signals, SD=W&&W.sig_detail;
+const ruleKey=k=>/ON RRP/.test(k)?'rrp':/TGA/.test(k)?'tga':/SOFR/.test(k)?'spread':/资产负债表/.test(k)?'bs':null;
+const P=S&&S.prev;
+const B={up:'<span class="chg up">▲</span>',down:'<span class="chg down">▼</span>',mod:'<span class="chg mod">变</span>',add:'<span class="chg add">新</span>'};
+const inds=(S?S.indicators:[]).map(r=>{
+  let[k,v,sig,note]=r;
+  const rk=ruleKey(k); if(RS&&rk&&RS[rk])sig=RS[rk];
+  const p=P&&P.indicators&&P.indicators[k];
+  const ruled=RS&&rk&&RS[rk];
+  const bd=!P?'':(p===undefined?B.add:((ruled?v!==p[1]:(sig!==p[0]||v!==p[1]))?B.mod:''));
+  if(v==='AUTO'&&L){
+    if(/TGA/.test(k)) v=`$${L.tga}T（13周${SD?pm(SD.tga13)+'T':''}·自动）`;
+    else if(/SOFR/.test(k)) v=`${pm(L.spread)}bp（自动）`;
+    else v='—';
   }
-  return {series: scope==='g3'?DATA.gl3_yoy:DATA.gl_yoy,
-          name:'全球流动性条件 同比%（'+(scope==='g3'?'美欧日':'+中国')+'）',
-          isChina:false, latest: scope==='g3'?DATA.latest.yoy3:DATA.latest.yoy};
-}
-function renderStats(){
-  const L=DATA.latest, a=DATA.assets[metal], LQ=activeLiq(), yoy=LQ.latest;
-  const cls=yoy>=0?'pos':'neg', state=yoy>=0?'边际改善/中性':'边际转弱', ac=assetColor(a.group);
-  const liqCard = LQ.isChina
-    ? `<div class="card"><div class="k">中国流动性（M1 / M2 同比）</div><div class="v ${cls}" style="font-size:18px">${DATA.china_liq.latest.m1}% / ${DATA.china_liq.latest.m2}%</div></div>`
-    : `<div class="card"><div class="k">全球流动性总量（${scope==='g3'?'美欧日':'＋中国'}）</div><div class="v">${scope==='g3'?L.total3:L.total} <span style="font-size:13px;color:var(--muted)">万亿$</span></div></div>`;
-  const fxSub=(!LQ.isChina&&scope==='g3'&&typeof L.yoy3_fx==='number')
-    ?`<div style="font-size:11px;color:var(--muted);margin-top:3px">固定汇率 <b style="color:${L.yoy3_fx>=0?'var(--green)':'var(--red)'}">${fmt(L.yoy3_fx)}%</b> · 汇率贡献 ${fmt(yoy-L.yoy3_fx)}%</div>`:'';
-  document.getElementById('stats').innerHTML = liqCard + `
-    <div class="card"><div class="k">${LQ.isChina?'中国 M1 同比':'流动性条件（12月同比）'}</div><div class="v ${cls}">${fmt(yoy)}%</div>${fxSub}</div>
-    <div class="card"><div class="k">当前状态</div><div class="v ${cls}" style="font-size:18px">${state}</div></div>
-    <div class="card"><div class="k">${a.name}（${a.unit}）</div><div class="v" style="color:${ac}">${lastVal(a)}</div></div>
-    <div class="card"><div class="k">数据截至</div><div class="v" style="font-size:16px">${L.date}</div></div>`;
-}
+  if(ruled&&/资产负债表/.test(k)&&SD) v+=`（13周${pm(SD.bs13)}%）`;
+  return {k,v,sig,note,bd};
+});
+const tw={bear:2,warn:1,bull:0};
+const SRC=inds.filter(r=>/^①源头/.test(r.k));
+const tight=SRC.length?SRC.reduce((s,r)=>s+(tw[r.sig]??1),0)/SRC.length:1;
+const regime=tight>=1.5?'收紧':tight>=0.8?'边际收紧':'中性偏松';
+const rc=tight>=1.5?col('--red'):tight>=0.8?col('--warn'):col('--green');
 
-function pair(s){return s.dates.map((d,i)=>[d, s.values[i]]);}
-function addMonths(ds,m){const d=new Date(ds);d.setMonth(d.getMonth()+m);return d.toISOString().slice(0,10);}
-function shiftSeries(s,m){return m?{dates:s.dates.map(d=>addMonths(d,m)),values:s.values}:s;}
+/* ---------- 一、结论层 ---------- */
+document.getElementById('stance').textContent=S?S.stance:'—';
+document.getElementById('updated').textContent=S?('定性更新 '+S.updated+(L?(' · 定量截至 '+L.date):'')):'';
+document.getElementById('regime').textContent=regime;
+document.getElementById('regime').style.color=rc;
+document.getElementById('gpin').style.left=Math.min(97,Math.max(2,tight/2*100))+'%';
+/* 较上期变化：取 history 中早于本期定性日期的最近一条紧度 */
+(function(){
+  const hist=(S.history||[]).filter(h=>h.d<S.updated);
+  if(!hist.length)return;
+  const prev=hist[hist.length-1].tight, dv=+(tight-prev).toFixed(2);
+  const gp=document.getElementById('gprev');
+  /* 上期与当期读数相同→不显示幽灵指针，避免误读 */
+  if(Math.abs(dv)>0.05){gp.style.left=Math.min(97,Math.max(2,prev/2*100))+'%'; gp.style.display='';}
+  const gd=document.getElementById('gdelta'); gd.style.display='';
+  if(dv<-0.05){gd.className='gdelta loose';gd.textContent='▼ 较上期转松 '+prev.toFixed(2)+'→'+tight.toFixed(2);}
+  else if(dv>0.05){gd.className='gdelta tightn';gd.textContent='▲ 较上期转紧 '+prev.toFixed(2)+'→'+tight.toFixed(2);}
+  else{gd.className='gdelta flat';gd.textContent='→ 较上期持平 '+tight.toFixed(2);}
+})();
+document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①源头5项信号均值（数据规则+人工各半）';
+/* 本周要点：拆 oneliner 前几句为bullets */
+(function(){
+  const one=S?S.oneliner:'';
+  const parts=one.split(/[；;]/).map(s=>s.trim()).filter(s=>s.length>8);
+  const ul=document.getElementById('bullets');
+  ul.innerHTML=parts.slice(0,4).map(s=>'<li>'+esc(s)+(/[。！？]$/.test(s)?'':'。')+'</li>').join('');
+  document.getElementById('onefull').textContent=one;
+})();
+/* 关键数字 */
+(function(){
+  const Ld=DATA.latest;
+  const nlv=W?W.netliq.values:[],nn=nlv.length;
+  const w13pct=nn>13?(nlv[nn-1]/nlv[nn-14]-1)*100:null;
+  window.__w13pct=w13pct;
+  const cn=DATA.china_liq&&DATA.china_liq.latest;
+  const sgn=v=>v>=0?'pos':'neg';
+  document.getElementById('keys').innerHTML=`
+    <div class="kcard"><div class="k">G3流动性 同比（月度·领先3-6月）</div>
+      <div class="v ${sgn(Ld.yoy3)}">${fmt(Ld.yoy3)}%</div>
+      <div class="s">固定汇率口径 <b class="${sgn(Ld.yoy3_fx)}">${fmt(Ld.yoy3_fx)}%</b> · 差值${fmt(Ld.yoy3-Ld.yoy3_fx)}%是美元汇率贡献</div></div>
+    <div class="kcard"><div class="k">美元净流动性（周频·当下水位）</div>
+      <div class="v">${L?L.netliq:'—'} <span style="font-size:13px;color:var(--muted)">万亿$</span></div>
+      <div class="s">周环比 <b class="${L&&L.wow>=0?'pos':'neg'}">${L?pm(L.wow):'—'}</b> · 13周 <b class="${(w13pct??0)>=0?'pos':'neg'}">${w13pct!=null?fmt(w13pct)+'%':'—'}</b></div></div>
+    <div class="kcard"><div class="k">中国锚 M1 同比（"M1定买卖"）</div>
+      <div class="v ${cn&&cn.m1>=0?'pos':'neg'}">${cn?cn.m1+'%':'—'}</div>
+      <div class="s">M2 ${cn?cn.m2+'%':'—'} · 决定A股/港股相对表现</div></div>`;
+})();
 
-function arcSeries(arcs){
-  return {type:'custom', xAxisIndex:0, yAxisIndex:0, silent:true, z:1,
-    data: arcs.map(a=>[a.x1,a.x2]),
-    renderItem:(params,api)=>{
-      const a=arcs[params.dataIndex], grid=params.coordSys;
-      const p1=api.coord([a.x1,0]), p2=api.coord([a.x2,0]);
-      const baseY = grid.y + grid.height - 6, ry=26;
-      const d1=new Date(a.x1), d2=new Date(a.x2), dFull=new Date(a.x2_full||a.x2);
-      const days12=(d2-d1)/86400000;
-      const pxPerDay = days12>0 ? (p2[0]-p1[0])/days12 : 0;
-      const fullX = a.partial ? (p1[0]+pxPerDay*((dFull-d1)/86400000)) : p2[0];
-      const cx=(p1[0]+fullX)/2, rx=(Math.abs(fullX-p1[0])/2)||1, xEnd=p2[0];
-      const tEnd=Math.acos(Math.max(-1,Math.min(1,(xEnd-cx)/rx)));
-      const pts=[];
-      for(let t=Math.PI;t>=tEnd-1e-6;t-=Math.PI/60){pts.push([cx+rx*Math.cos(t), baseY-ry*Math.sin(t)]);}
-      const ch=[{type:'polyline', shape:{points:pts}, style:{stroke:col('--red'),lineWidth:1.1,opacity:a.partial?0.9:0.75,lineDash:a.partial?[4,3]:null}}];
-      if(a.partial){
-        ch.push({type:'circle', shape:{cx:xEnd,cy:baseY-ry*Math.sin(tEnd),r:2.4}, style:{fill:col('--red')}});
-        ch.push({type:'text', style:{text:'进行中 '+Math.round(a.frac*100)+'%',x:xEnd,y:baseY+1,textAlign:'right',fill:col('--red'),fontSize:9,opacity:.9}});
-      }else{
-        ch.push({type:'text', style:{text:'3.5yrs',x:cx,y:baseY+1,textAlign:'center',fill:col('--red'),fontSize:9,opacity:.85}});
+/* ---------- 一b、事件日历 ---------- */
+(function(){
+  const evs=S&&S.events;
+  if(!evs||!evs.length)return;
+  const today=new Date().toISOString().slice(0,10);
+  const wd=['日','一','二','三','四','五','六'];
+  const cls={'源头':'src','定价':'prc','观察':'obs'};
+  /* 只显示未过期超过2天的事件 */
+  const show=evs.filter(e=>e.d>=addDays(today,-2)).sort((a,b)=>a.d<b.d?-1:1);
+  function addDays(ds,n){const d=new Date(ds);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+  if(!show.length)return;
+  document.getElementById('evblk').style.display='';
+  document.getElementById('evrow').innerHTML=show.map(e=>{
+    const dt=new Date(e.d);
+    const days=Math.round((dt-new Date(today))/86400000);
+    const state=e.d<today?'past':(e.d===today?'today':'');
+    const cd=days>0?('T-'+days):(days===0?'今天':'');
+    return `<div class="ev ${state}">
+      <div class="d">${e.d.slice(5).replace('-','/')}<span class="wd">周${wd[dt.getDay()]}</span></div>
+      ${cd?`<div class="cd">${cd}</div>`:''}
+      <div class="n">${esc(e.name)}</div>
+      <div><span class="evtag ${cls[e.impact]||'obs'}">${esc(e.impact)}</span>${e.confirm?'':'<span class="evtag tbd">待定</span>'}</div>
+      <div class="note" style="margin-top:5px">${esc(e.note)}</div>
+    </div>`;
+  }).join('');
+})();
+
+/* ---------- 二、传导链 ---------- */
+(function(){
+  const stages=[
+    {pre:'①源头',name:'央行与财政',desc:'水从哪来'},
+    {pre:'②传导',name:'利率与通胀',desc:'流到哪里'},
+    {pre:'③确认',name:'汇率',desc:'美元/人民币确认'},
+    {pre:'④温度计',name:'哨兵资产',desc:'温度读数'},
+    {pre:'中国锚',name:'中国锚',desc:'独立水源(不计紧度)'}
+  ];
+  const rowEl=document.getElementById('chainrow');
+  let html='';
+  stages.forEach((st,i)=>{
+    const rows=inds.filter(r=>r.k.startsWith(st.pre));
+    const cnt={bull:0,warn:0,bear:0};
+    rows.forEach(r=>cnt[r.sig]!==undefined&&cnt[r.sig]++);
+    const worst=cnt.bear>0?'bear':cnt.warn>0?'warn':'bull';
+    const chgN=rows.filter(r=>r.bd).length;
+    /* 环节方向角标：本期 vs prev 的信号均值（bear2/warn1/bull0） */
+    let dirBd='';
+    if(P&&P.indicators){
+      const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+      const cur=avg(rows.map(r=>tw[r.sig]??1));
+      const prv=avg(rows.map(r=>P.indicators[r.k]?tw[P.indicators[r.k][0]]??1:null).filter(x=>x!==null));
+      if(cur!==null&&prv!==null){
+        const dv=cur-prv;
+        dirBd=dv>0.01?'<span class="chg down" title="较上期转紧">▲紧</span>':dv<-0.01?'<span class="chg up" title="较上期转松">▼松</span>':'';
       }
-      return {type:'group', children:ch};
-    }};
-}
-
-function z3y(glS,a){
-  const ds=[].concat((glS&&glS.dates)||[],(a&&a.dates)||[]);
-  if(!ds.length) return undefined;
-  const end=ds.reduce((m,d)=>d>m?d:m,'0000-00-00');
-  const dt=new Date(end); dt.setFullYear(dt.getFullYear()-3);
-  return dt.toISOString().slice(0,10);
-}
-function render(){
-  const LQ=activeLiq();
-  const a = DATA.assets[metal], mName=a.name, mCol=assetColor(a.group);
-  const leadM = (a.lead_m||0), shiftOn = liqShift && leadM>0;
-  const glS = shiftOn ? shiftSeries(LQ.series, leadM) : LQ.series;
-  const liqName = LQ.name + (shiftOn?'（前移'+leadM+'月）':'');
-  const fxRaw = (!LQ.isChina && scope==='g3' && DATA.gl3_yoy_fx) ? DATA.gl3_yoy_fx : null;
-  const fxS = fxRaw ? (shiftOn ? shiftSeries(fxRaw, leadM) : fxRaw) : null;
-  const fxName = '固定汇率口径 同比%'+(shiftOn?'（前移'+leadM+'月）':'');
-  const troughPts = (LQ.isChina||shiftOn)?[]:DATA.troughs.map(d=>{const i=glS.dates.indexOf(d);return i>=0?[d,glS.values[i]]:null;}).filter(Boolean);
-  const si=document.getElementById('shiftinfo');
-  if(si)si.textContent = liqShift ? (leadM>0?('蓝线已前移 '+leadM+' 月：右端 overhang = 对 '+mName.replace(/\(.*\)/,'')+' 未来约 '+leadM+' 月的指示'):('该标的对其锚定流动性无显著领先(best_lag≤0)，不前移')) : '';
-  document.querySelectorAll('#scope button').forEach(b=>{b.style.opacity=LQ.isChina?0.35:'';b.style.pointerEvents=LQ.isChina?'none':'';});
-  chart.setOption({
-    backgroundColor:'transparent', animationDuration:500,
-    tooltip:{trigger:'axis',backgroundColor:'rgba(14,28,56,.95)',borderColor:col('--grid'),
-      textStyle:{color:col('--txt'),fontSize:12},axisPointer:{type:'cross',lineStyle:{color:col('--muted'),type:'dashed'}}},
-    legend:{top:6,textStyle:{color:col('--muted')},data:(fxS?[liqName,fxName,mName+' 价格']:[liqName,mName+' 价格'])},
-    grid:{left:58,right:70,top:42,bottom:64},
-    xAxis:{type:'time',axisLine:{lineStyle:{color:col('--grid')}},axisLabel:{color:col('--muted')},splitLine:{show:false}},
-    yAxis:[
-      {type:'value',name:LQ.isChina?'中国M1 同比%':'流动性同比 %',position:'left',nameTextStyle:{color:col('--blue')},
-       axisLabel:{color:col('--blue')},splitLine:{lineStyle:{color:col('--grid'),opacity:.5}},axisLine:{lineStyle:{color:col('--blue')}}},
-      {type:'value',name:mName+' ('+a.unit+')',position:'right',scale:true,
-       nameTextStyle:{color:mCol},axisLabel:{color:mCol},splitLine:{show:false},axisLine:{lineStyle:{color:mCol}}}
-    ],
-    dataZoom:[{type:'inside',startValue:z3y(glS,a)},{type:'slider',height:18,bottom:30,startValue:z3y(glS,a),borderColor:col('--grid'),fillerColor:'rgba(58,123,213,.2)',textStyle:{color:col('--muted')}}],
-    series:[
-      {name:liqName,type:'line',yAxisIndex:0,showSymbol:false,smooth:true,
-       lineStyle:{color:col('--blue'),width:1.6},areaStyle:{color:col('--blue'),opacity:.22},
-       markLine:{symbol:'none',silent:true,lineStyle:{color:col('--muted'),opacity:.5},data:[{yAxis:0}]},data:pair(glS)},
-      ...(fxS?[{name:fxName,type:'line',yAxisIndex:0,showSymbol:false,smooth:true,
-       lineStyle:{color:'#a78bfa',width:1.3,type:'dashed'},data:pair(fxS)}]:[]),
-      {name:mName+' 价格',type:'line',yAxisIndex:1,showSymbol:false,lineStyle:{color:mCol,width:1.4},data:pair(a)},
-      {name:'波谷',type:'scatter',yAxisIndex:0,symbol:'triangle',symbolSize:9,symbolRotate:180,
-       itemStyle:{color:col('--red')},data:troughPts,tooltip:{show:false}},
-      arcSeries(shiftOn?[]:((DATA.cycles&&DATA.cycles[cycleMode])?DATA.cycles[cycleMode].arcs:DATA.arcs))
-    ]
-  },true);
-  renderStats();
-  const cy=DATA.cycles&&DATA.cycles[cycleMode];
-  const ci=document.getElementById('cycleinfo');
-  if(ci&&cy){const b=cy.bounds;ci.textContent='周期起点: '+(b.length?b.map(x=>x.slice(0,7)).join(' · '):'—');}
-  document.querySelectorAll('#ranklist .row').forEach(r=>r.style.outline = r.dataset.k===metal?'1px solid '+col('--blue'):'none');
-}
-
-function buildAssetBar(){
-  const bar=document.getElementById('assetbar');
-  bar.innerHTML='<span class="lbl">标的</span>';
-  GROUPS.forEach(g=>{
-    const keys=DATA.asset_order.filter(k=>DATA.assets[k].group===g);
-    if(!keys.length)return;
-    const seg=document.createElement('div'); seg.className='seg';
-    keys.forEach(k=>{
-      const b=document.createElement('button');
-      b.textContent=DATA.assets[k].name.replace(/\(.*\)/,''); b.dataset.v=k;
-      if(k===metal)b.classList.add('on');
-      b.onclick=()=>{document.querySelectorAll('#assetbar button').forEach(x=>x.classList.remove('on'));b.classList.add('on');metal=k;render();};
-      seg.appendChild(b);
-    });
-    bar.appendChild(seg);
+    }
+    html+=`<div class="step" data-pre="${st.pre}">
+      <div class="sn">${esc(st.pre)} · ${esc(st.desc)}</div>
+      <div class="sname"><span class="dot ${worst}"></span> ${esc(st.name)}${dirBd}</div>
+      <div class="sig">${cnt.bear?`<span><span class="dot bear"></span>${cnt.bear}</span>`:''}${cnt.warn?`<span><span class="dot warn"></span>${cnt.warn}</span>`:''}${cnt.bull?`<span><span class="dot bull"></span>${cnt.bull}</span>`:''}<span>${rows.length}项${chgN?` · <b style="color:#bc8cff">${chgN}项有变</b>`:''}</span></div>
+    </div>`;
+    if(i<3)html+='<div class="arrow">→</div>';
   });
-}
-
-function selectMetal(k){
-  metal=k;
-  document.querySelectorAll('#assetbar button').forEach(x=>x.classList.toggle('on', x.dataset.v===k));
-  render();
-}
-
-function buildLeadLag(){
-  const list=document.getElementById('ranklist'); list.innerHTML='';
-  const maxAbs=Math.max(...DATA.lead_lag.map(r=>Math.abs(r.best_corr)),0.01);
-  DATA.lead_lag.forEach(r=>{
-    const a=DATA.assets[r.key], c=assetColor(a.group);
-    const w=Math.max(2,Math.abs(r.best_corr)/maxAbs*100);
-    const weak=Math.abs(r.best_corr)<0.15;   // 弱相关置灰：扫描挑最大值易出伪"领先"，不给噪声视觉权重
-    const row=document.createElement('div'); row.className='row'; row.dataset.k=r.key;
-    if(weak)row.style.opacity=.38;
-    row.innerHTML=`<div class="nm">${r.name}</div>
-      <div class="tag">${weak?'无稳定关系(|r|&lt;0.15)':lagTag(r.best_lag)}</div>
-      <div class="barwrap"><div class="bar" style="width:${w}%;background:${c}"></div></div>
-      <div class="rv" style="color:${r.best_corr>=0?col('--green'):col('--red')}">${fmt(r.best_corr)}</div>`;
-    row.onclick=()=>selectMetal(r.key);
-    list.appendChild(row);
+  rowEl.innerHTML=html;
+  const det=document.getElementById('chaindetail'), tb=det.querySelector('tbody');
+  let openPre=null;
+  rowEl.querySelectorAll('.step').forEach(el=>{
+    el.onclick=()=>{
+      const pre=el.dataset.pre;
+      if(openPre===pre){openPre=null;det.classList.remove('show');el.classList.remove('open');return;}
+      openPre=pre;
+      rowEl.querySelectorAll('.step').forEach(x=>x.classList.toggle('open',x.dataset.pre===pre));
+      tb.innerHTML=inds.filter(r=>r.k.startsWith(pre)).map(r=>
+        `<tr><td>${esc(r.k.replace(/^[^·]+·/,''))}${r.bd}</td><td>${esc(r.v)}</td><td><span class="dot ${r.sig}"></span> ${esc(r.note)}</td></tr>`).join('');
+      det.classList.add('show');
+    };
   });
-}
+  /* 默认展开①源头 */
+  rowEl.querySelector('.step').click();
+})();
 
-function buildCycleBar(){
-  const bar=document.getElementById('cyclebar'); bar.innerHTML='';
-  const modes=[['manual','手动锚点'],['recent','最近谷底'],['fit','拟合谷底']];
-  modes.forEach(([k,label])=>{
-    if(!DATA.cycles||!DATA.cycles[k])return;
-    const b=document.createElement('button'); b.textContent=label; b.dataset.v=k;
-    if(k===cycleMode)b.classList.add('on');
-    b.onclick=()=>{document.querySelectorAll('#cyclebar button').forEach(x=>x.classList.remove('on'));b.classList.add('on');cycleMode=k;render();};
-    bar.appendChild(b);
-  });
-}
+/* 商品时钟 */
+(function(){
+  const steps=[['① 金银贵金属','货币属性·闻到放水先涨'],['② 有色金属(铜铝)','实体需求回暖接棒'],['③ 原油启动','通胀全面抬头才涨'],['④ 周期尾声','油价倒逼央行收紧']];
+  const clockBd=(P&&P.clockStage!==undefined&&P.clockStage!==S.clockStage)?B.mod:'';
+  document.getElementById('clockrow').innerHTML=steps.map((s,i)=>
+    `<div class="cstep${i===S.clockStage?' active':''}">${s[0]}${i===S.clockStage?clockBd+' <span style="font-size:10px;color:var(--red)">← 当前</span>':''}<br><span style="font-size:10px;opacity:.75">${s[1]}</span></div>`
+  ).join('<div class="carrow">→</div>');
+  document.getElementById('clocknote').textContent=S.clockNote||'';
+})();
 
-function buildSummary(){
-  const S=window.SUMMARY; const box=document.getElementById('summary');
-  if(!S){box.style.display='none';return;}
-  const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t)?'r':(/超配|占优|长配|加仓|留子弹|留弹药|回补|买入|重配|抄底/.test(t)?'g':'y');
-  // 摘要过期徽章：定性层落后于周频数据（原"当前状态"表已取消，条目归指标链/管道/时钟）
-  const W=window.WEEKLY, L=W&&W.latest;
-  let stale='';
-  if(L&&L.date>S.updated){
-    const days=Math.round((new Date(L.date)-new Date(S.updated))/86400000);
-    stale=`<span class="stalechip${days>10?' bad':''}">定量已更新至 ${esc(L.date)}，定性摘要截至 ${esc(S.updated)}${days>10?'·请重跑周更':''}</span>`;
-  }
+/* 周期卡 */
+(function(){
+  const cycColor=p=>p>=85?col('--red'):p>=60?col('--warn'):col('--green');
+  document.getElementById('cyccards').innerHTML=(S.cycles||[]).map(c=>{
+    const p=P&&P.cycles&&P.cycles[c.name];
+    const bd=!P?'':(p===undefined?B.add:((c.pct>p[0]?B.up:c.pct<p[0]?B.down:'')+(c.stage!==p[1]?B.mod:'')));
+    return `<div class="cyc"><div class="k">${esc(c.name)}</div>
+      <div class="st">${esc(c.stage)}${bd}</div>
+      <div class="pbar"><i style="width:${c.pct}%;background:${cycColor(c.pct)}"></i></div></div>`;
+  }).join('');
+})();
+
+/* ---------- 三、配置 ---------- */
+(function(){
   const _po={g:0,y:1,r:2};
-  const _alloc=S.allocation.slice().sort((a,b)=>_po[pillClass(a[1])]-_po[pillClass(b[1])]);
-  const P=S.prev;
-  const allocRows=_alloc.map(r=>{
+  const rows=S.allocation.slice().sort((a,b)=>_po[pillClass(a[1])]-_po[pillClass(b[1])]);
+  document.getElementById('alloctb').innerHTML=rows.map(r=>{
     const p=P&&P.allocation&&P.allocation[r[0]];
-    const bd=!P?'':(p===undefined?'<span class="chg add">新</span>':(p!==r[1]?'<span class="chg mod">变</span>':''));
+    const bd=!P?'':(p===undefined?B.add:(p!==r[1]?B.mod:''));
     return `<tr><td>${esc(r[0])}${bd}</td><td><span class="pill ${pillClass(r[1])}">${esc(r[1])}</span></td><td>${esc(r[2])}</td></tr>`;
   }).join('');
-  const stanceBd=(P&&P.stance&&P.stance!==S.stance)?'<span class="chg mod">变</span>':'';
-  const risks=S.risks.map(x=>`<div>• ${esc(x)}</div>`).join('');
-  box.innerHTML=`
-    <div class="head"><h3>资产配置摘要</h3><span class="stance">${esc(S.stance)}</span>${stanceBd}
-      <span class="lbl">定性截至 ${esc(S.updated)}</span>${stale}</div>
-    <div class="one">${esc(S.oneliner)}</div>
-    <div class="cols">
-      <div class="colbox"><div class="colttl">分资产配置</div><table class="alloctab">${allocRows}</table></div>
-    </div>
-    <div class="trig">
-      <div><b style="color:var(--green)">加风险信号</b><br>${esc(S.add)}</div>
-      <div><b style="color:var(--red)">减风险信号</b><br>${esc(S.reduce)}</div>
-    </div>
-    <details><summary>风险与反证 / 免责</summary><div class="risk">${risks}<div>• ${esc(S.disclaimer)}</div></div></details>`;
-}
+  document.getElementById('addsig').textContent=S.add;
+  document.getElementById('redsig').textContent=S.reduce;
+  document.getElementById('risks').innerHTML=S.risks.map(x=>'<div>• '+esc(x)+'</div>').join('')+'<div>• '+esc(S.disclaimer)+'</div>';
+})();
 
-let wchart=null;
-function buildWeekly(){
-  const W=window.WEEKLY; if(!W){document.getElementById('weekly').style.display='none';return;}
-  const L=W.latest, sgn=v=>v>=0?'pos':'neg', pm=v=>(v>=0?'+':'')+v;
-  // P2: 13周变化 + 一年分位（客观趋势context，前端直接从序列算，不依赖构建脚本）
-  const nlv=W.netliq.values, nn=nlv.length;
-  const w13=nn>13?+(nlv[nn-1]-nlv[nn-14]).toFixed(3):null;
-  const yr=nlv.slice(-52), pctl=Math.round(yr.filter(v=>v<=nlv[nn-1]).length/yr.length*100);
-  window.__w13=w13; window.__w13pct=nn>13?(nlv[nn-1]/nlv[nn-14]-1)*100:null;
-  document.getElementById('wstats').innerHTML=`
-    <div class="card"><div class="k">净流动性</div><div class="v">${L.netliq} <span style="font-size:13px;color:var(--muted)">万亿$</span></div></div>
-    <div class="card"><div class="k">周环比 / 4周</div><div class="v ${sgn(L.wow)}" style="font-size:17px">${pm(L.wow)} / ${pm(L.w4)}</div></div>
-    <div class="card"><div class="k">13周 / 一年分位</div><div class="v ${w13!=null?sgn(w13):''}" style="font-size:17px">${w13!=null?pm(w13):'—'} / ${pctl}%</div></div>
-    <div class="card"><div class="k">ON RRP</div><div class="v">${L.rrp} <span style="font-size:13px;color:var(--muted)">十亿$</span></div></div>
-    <div class="card"><div class="k">银行准备金</div><div class="v">${L.reserves} <span style="font-size:13px;color:var(--muted)">万亿$</span></div></div>
-    <div class="card"><div class="k">SOFR−IORB</div><div class="v ${L.spread>5?'neg':'pos'}" style="font-size:17px">${pm(L.spread)} bp</div></div>
-    <div class="card"><div class="k">数据截至</div><div class="v" style="font-size:15px">${L.date}</div></div>`;
-  wchart=echarts.init(document.getElementById('weekchart'),null,{renderer:'canvas'});
-  wchart.setOption({
-    backgroundColor:'transparent',
-    tooltip:{trigger:'axis',backgroundColor:'rgba(14,28,56,.95)',borderColor:col('--grid'),textStyle:{color:col('--txt'),fontSize:12},axisPointer:{type:'cross',lineStyle:{color:col('--muted'),type:'dashed'}}},
-    legend:{top:4,textStyle:{color:col('--muted')},data:['净流动性(万亿$)','SOFR−IORB(bp)']},
-    grid:{left:56,right:58,top:34,bottom:34},
-    xAxis:{type:'time',axisLine:{lineStyle:{color:col('--grid')}},axisLabel:{color:col('--muted')},splitLine:{show:false}},
-    yAxis:[{type:'value',name:'净流动性 万亿$',scale:true,position:'left',nameTextStyle:{color:col('--green')},axisLabel:{color:col('--green')},splitLine:{lineStyle:{color:col('--grid'),opacity:.4}},axisLine:{lineStyle:{color:col('--green')}}},
-           {type:'value',name:'利差 bp',position:'right',nameTextStyle:{color:col('--cmd')},axisLabel:{color:col('--cmd')},splitLine:{show:false},axisLine:{lineStyle:{color:col('--cmd')}}}],
-    series:[{name:'净流动性(万亿$)',type:'line',showSymbol:false,smooth:true,lineStyle:{color:col('--green'),width:1.6},areaStyle:{color:col('--green'),opacity:.15},data:W.netliq.dates.map((d,i)=>[d,W.netliq.values[i]])},
-            {name:'SOFR−IORB(bp)',type:'line',yAxisIndex:1,showSymbol:false,lineStyle:{color:col('--cmd'),width:1},data:W.spread.dates.map((d,i)=>[d,W.spread.values[i]])}]
-  });
-}
-
-// ===== 周期定位与自洽校验（P1：五层周期+时钟+指标链+校验条）=====
-function buildCycles(){
-  const S=window.SUMMARY, blk=document.getElementById('cycleblock');
-  if(!S||!S.cycles||!S.indicators){return;}
-  blk.style.display='';
-  const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const W=window.WEEKLY, L=W&&W.latest, pm=v=>(v>=0?'+':'')+v;
-  // 较上期变化角标（对比 S.prev 快照，自动diff）
-  const P=S.prev;
-  const B={up:'<span class="chg up">▲</span>',down:'<span class="chg down">▼</span>',mod:'<span class="chg mod">变</span>',add:'<span class="chg add">新</span>'};
-  // 周期卡：横条颜色=风险档位（绿<60没问题 / 黄60-84谨慎 / 红≥85警戒），由pct自动定档
-  const cycColor=p=>p>=85?col('--red'):p>=60?'#e2b24a':col('--green');
-  document.getElementById('cyclecards').innerHTML=S.cycles.map(c=>{
-    const cc=cycColor(c.pct), p=P&&P.cycles&&P.cycles[c.name];
-    const bd=!P?'':(p===undefined?B.add:((c.pct>p[0]?B.up:c.pct<p[0]?B.down:'')+(c.stage!==p[1]?B.mod:'')));
-    return `<div class="card" style="min-width:190px"><div class="k">${esc(c.name)}</div>
-      <div style="font-size:13px;font-weight:600;margin-top:4px;line-height:1.5">${esc(c.stage)}${bd}</div>
-      <div class="pbar"><i style="width:${c.pct}%;background:${cc}"></i></div></div>`;
-  }).join('');
-  // 商品时钟
-  const clockBd=(P&&P.clockStage!==undefined&&P.clockStage!==S.clockStage)?B.mod:'';
-  const steps=['① 金银贵金属','② 有色金属(铜铝)','③ 原油启动','④ 周期尾声'];
-  document.getElementById('clockrow').innerHTML=steps.map((s,i)=>
-    `<div class="step${i===S.clockStage?' active':''}">${s}${i===S.clockStage?clockBd+'<br><span style="font-size:10px;color:var(--red)">← 当前位置</span>':''}</div>`
-  ).join('<div class="arrow">→</div>');
-  const cn=document.getElementById('clocknote'); if(cn)cn.textContent=S.clockNote||'';
-  // 指标链：①源头四行由规则自动打分(阈值在build_weekly.py)，信号覆盖LLM值；AUTO读数由管道填充
-  const RS=W&&W.signals, SD=W&&W.sig_detail;
-  const ruleKey=k=>/ON RRP/.test(k)?'rrp':/TGA/.test(k)?'tga':/SOFR/.test(k)?'spread':/资产负债表/.test(k)?'bs':null;
-  const inds=S.indicators.map(r=>{
-    let[k,v,sig,note]=r;
-    const rk=ruleKey(k), ruled=RS&&rk&&RS[rk];
-    if(ruled) sig=RS[rk];
-    const p=P&&P.indicators&&P.indicators[k];
-    // 规则行只按读数diff（信号由数据驱动，不算"观点变化"）；其余行按信号或读数diff
-    const bd=!P?'':(p===undefined?B.add:((ruled?v!==p[1]:(sig!==p[0]||v!==p[1]))?B.mod:''));
-    if(v==='AUTO'&&L){
-      if(/TGA/.test(k)) v=`$${L.tga}T（13周${SD?pm(SD.tga13)+'T':''}·截至${L.date}·自动）`;
-      else if(/SOFR/.test(k)) v=`${pm(L.spread)}bp（截至${L.date}·自动）`;
-      else v='—';
-    }
-    if(ruled&&/资产负债表/.test(k)&&SD) v+=`（13周${pm(SD.bs13)}%）`;
-    if(ruled) note+='｜规则打分';
-    return [k,v,sig,note,bd];
-  });
-  document.querySelector('#indtab tbody').innerHTML=inds.map(r=>
-    `<tr><td>${esc(r[0])}${r[4]}</td><td>${esc(r[1])}</td><td><span class="dot ${r[2]}"></span>${esc(r[3])}</td></tr>`).join('');
-  // 校验条：主观紧度 ↔ 配置防御度 ↔ 客观净流动性13周
-  const tw={bear:2,warn:1,bull:0};
-  const SRC=inds.filter(r=>/^①源头/.test(r[0]));
-  const avg=SRC.length?SRC.reduce((s,r)=>s+(tw[r[2]]??1),0)/SRC.length:1;
-  const regime=avg>=1.5?'收紧':avg>=0.8?'边际收紧':'中性偏松';
-  const rc=avg>=1.5?col('--red'):avg>=0.8?'#e2b24a':col('--green');
-  const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t)?'r':(/超配|占优|长配|加仓|留子弹|留弹药|回补|买入|重配|抄底/.test(t)?'g':'y');
+/* ---------- 四、深入数据 ---------- */
+/* 校验条 */
+(function(){
   const wv={r:1,y:0,g:-1}, riskOn=/科技|半导体|比特币|纳指|成长/, defen=/现金|黄金|白银|价值|A股|红利|美债|美元/;
   let d=0;
   (S.allocation||[]).forEach(r=>{const v=wv[pillClass(r[1])]??0;if(riskOn.test(r[0]))d+=v;else if(defen.test(r[0]))d-=v;});
   const dLab=d>=3?'防御':d>=1?'偏防御':d<=-3?'进攻':d<=-1?'偏进攻':'中性';
   const issues=[];
-  if(avg>=0.8&&d<1)issues.push(`流动性${regime}，但配置防御度偏低(${d})——应增防御/减进攻`);
-  if(avg<0.8&&d>3)issues.push(`流动性中性偏松，但配置过度防御(${d})——或错失反弹`);
+  if(tight>=0.8&&d<1)issues.push(`流动性${regime}，但配置防御度偏低(${d})`);
+  if(tight<0.8&&d>3)issues.push(`流动性中性偏松，但配置过度防御(${d})`);
   const c13=window.__w13pct;
   if(typeof c13==='number'){
-    if(c13<=-2&&avg<0.8)issues.push(`净流动性13周${c13.toFixed(1)}%（客观收紧），但主观档位偏松——复核①源头打分`);
-    if(c13>=2&&avg>=1.5)issues.push(`净流动性13周+${c13.toFixed(1)}%（客观转松），但主观档位收紧——复核①源头打分或注明原因`);
+    if(c13<=-2&&tight<0.8)issues.push(`净流动性13周${c13.toFixed(1)}%（客观收紧），但主观档位偏松`);
+    if(c13>=2&&tight>=1.5)issues.push(`净流动性13周+${c13.toFixed(1)}%（客观转松），但主观档位收紧`);
   }
-  const liqCyc=S.cycles.find(c=>/流动性/.test(c.name));
-  if(liqCyc&&avg>=1.5&&!/收紧|拐点|回落|退潮/.test(liqCyc.stage))issues.push('源头层收紧，但流动性周期卡措辞未体现——核对措辞');
   const ok=issues.length===0;
   let hist='';
   if(S.history&&S.history.length){
-    hist='<span style="color:var(--muted)">紧度轨迹 '+S.history.slice(-8).map(h=>`${h.d.slice(5)} <b style="color:${h.tight>=1.5?col('--red'):h.tight>=0.8?'#e2b24a':col('--green')}">${h.tight.toFixed(2)}</b>`).join(' → ')+'</span>';
+    hist='<span style="color:var(--muted)">紧度轨迹 '+S.history.slice(-8).map(h=>`${h.d.slice(5)} <b style="color:${h.tight>=1.5?col('--red'):h.tight>=0.8?col('--warn'):col('--green')}">${h.tight.toFixed(2)}</b>`).join(' → ')+'</span>';
   }
-  document.getElementById('checkbar').innerHTML=`<div class="cbar" style="border-color:${ok?'var(--grid)':'#5a2a2a'}">
-    <span>流动性档位 <b style="color:${rc}">${regime}</b> <span style="color:var(--muted)">紧度${avg.toFixed(2)}/2${RS?'·①源头规则打分':''}</span></span>
+  document.getElementById('checkbar').innerHTML=`<div class="cbar">
+    <span>档位 <b style="color:${rc}">${regime}</b> <span style="color:var(--muted)">紧度${tight.toFixed(2)}/2</span></span>
     <span>配置基调 <b>${dLab}</b> <span style="color:var(--muted)">防御度${d}</span></span>
-    <span>净流动性13周 <b style="color:${(c13??0)>=0?col('--green'):col('--red')}">${typeof c13==='number'?(c13>=0?'+':'')+c13.toFixed(1)+'%':'—'}</b></span>
+    <span>净流动性13周 <b style="color:${(c13??0)>=0?col('--green'):col('--red')}">${typeof c13==='number'?fmt(c13)+'%':'—'}</b></span>
     ${hist}
     <span style="margin-left:auto" class="${ok?'ok':'bad'}">${ok?'✓ 各模块自洽':'⚠ '+issues.length+' 项待核'}</span>
     ${ok?'':'<ul>'+issues.map(x=>'<li>'+x+'</li>').join('')+'</ul>'}
   </div>`;
-}
+})();
 
-function bindScope(){
+/* 周频卡+图 */
+(function(){
+  if(!W)return;
+  const sgn=v=>v>=0?'pos':'neg';
+  document.getElementById('wkeys').innerHTML=`
+    <div class="kcard"><div class="k">净流动性</div><div class="v">${L.netliq}<span style="font-size:12px;color:var(--muted)"> 万亿$</span></div><div class="s">截至 ${L.date}</div></div>
+    <div class="kcard"><div class="k">ON RRP / 准备金</div><div class="v" style="font-size:17px">${L.rrp}十亿 / ${L.reserves}万亿</div><div class="s">RRP≈0 = 缓冲耗尽</div></div>
+    <div class="kcard"><div class="k">SOFR−IORB</div><div class="v ${L.spread>5?'neg':'pos'}" style="font-size:17px">${pm(L.spread)} bp</div><div class="s">&gt;+5bp = 回购紧张</div></div>`;
+  wchart=echarts.init(document.getElementById('weekchart'));
+  wchart.setOption({
+    backgroundColor:'transparent',
+    tooltip:{trigger:'axis',backgroundColor:'rgba(14,28,56,.95)',borderColor:col('--grid'),textStyle:{color:col('--txt'),fontSize:12}},
+    legend:{top:2,textStyle:{color:col('--muted')},data:['净流动性(万亿$)','SOFR−IORB(bp)']},
+    grid:{left:52,right:54,top:30,bottom:30},
+    xAxis:{type:'time',axisLine:{lineStyle:{color:col('--grid')}},axisLabel:{color:col('--muted')},splitLine:{show:false}},
+    yAxis:[{type:'value',scale:true,axisLabel:{color:col('--green')},splitLine:{lineStyle:{color:col('--grid'),opacity:.4}}},
+           {type:'value',position:'right',axisLabel:{color:col('--cmd')},splitLine:{show:false}}],
+    series:[{name:'净流动性(万亿$)',type:'line',showSymbol:false,smooth:true,lineStyle:{color:col('--green'),width:1.6},areaStyle:{color:col('--green'),opacity:.15},data:W.netliq.dates.map((d,i)=>[d,W.netliq.values[i]])},
+            {name:'SOFR−IORB(bp)',type:'line',yAxisIndex:1,showSymbol:false,lineStyle:{color:col('--cmd'),width:1},data:W.spread.dates.map((d,i)=>[d,W.spread.values[i]])}]
+  });
+})();
+
+/* 月度主图（简化：口径切换+资产切换，含固定汇率虚线） */
+function pair(s){return s.dates.map((d,i)=>[d,s.values[i]]);}
+function z3y(){const dt=new Date();dt.setFullYear(dt.getFullYear()-3);return dt.toISOString().slice(0,10);}
+function renderChart(){
+  const a=DATA.assets[metal], mCol=assetColor(a.group);
+  const liqS=scope==='g3'?DATA.gl3_yoy:DATA.gl_yoy;
+  const liqName='流动性同比%（'+(scope==='g3'?'美欧日·现汇':'G4+中国')+'）';
+  const fxS=(scope==='g3'&&DATA.gl3_yoy_fx)?DATA.gl3_yoy_fx:null;
+  document.getElementById('fxhint').style.display=fxS?'':'none';
+  chart.setOption({
+    backgroundColor:'transparent',animationDuration:400,
+    tooltip:{trigger:'axis',backgroundColor:'rgba(14,28,56,.95)',borderColor:col('--grid'),textStyle:{color:col('--txt'),fontSize:12}},
+    legend:{top:2,textStyle:{color:col('--muted')},data:(fxS?[liqName,'固定汇率口径',a.name+' 价格']:[liqName,a.name+' 价格'])},
+    grid:{left:54,right:64,top:36,bottom:58},
+    xAxis:{type:'time',axisLine:{lineStyle:{color:col('--grid')}},axisLabel:{color:col('--muted')},splitLine:{show:false}},
+    yAxis:[{type:'value',name:'同比 %',axisLabel:{color:col('--blue')},splitLine:{lineStyle:{color:col('--grid'),opacity:.5}}},
+           {type:'value',name:a.name+'('+a.unit+')',position:'right',scale:true,axisLabel:{color:mCol},splitLine:{show:false}}],
+    dataZoom:[{type:'inside',startValue:z3y()},{type:'slider',height:16,bottom:26,startValue:z3y(),borderColor:col('--grid'),fillerColor:'rgba(58,123,213,.2)',textStyle:{color:col('--muted')}}],
+    series:[
+      {name:liqName,type:'line',showSymbol:false,smooth:true,lineStyle:{color:col('--blue'),width:1.6},areaStyle:{color:col('--blue'),opacity:.2},
+       markLine:{symbol:'none',silent:true,lineStyle:{color:col('--muted'),opacity:.5},data:[{yAxis:0}]},data:pair(liqS)},
+      ...(fxS?[{name:'固定汇率口径',type:'line',showSymbol:false,smooth:true,lineStyle:{color:'#a78bfa',width:1.3,type:'dashed'},data:pair(fxS)}]:[]),
+      {name:a.name+' 价格',type:'line',yAxisIndex:1,showSymbol:false,lineStyle:{color:mCol,width:1.4},data:pair(a)}
+    ]
+  },true);
+}
+(function(){
+  chart=echarts.init(document.getElementById('chart'));
+  const bar=document.getElementById('assetbar');
+  bar.innerHTML='<span class="lbl">标的</span>';
+  GROUPS.forEach(g=>{
+    const keys=DATA.asset_order.filter(k=>DATA.assets[k].group===g);
+    if(!keys.length)return;
+    const seg=document.createElement('div');seg.className='seg';
+    keys.forEach(k=>{
+      const b=document.createElement('button');
+      b.textContent=DATA.assets[k].name.replace(/\(.*\)/,'');b.dataset.v=k;
+      if(k===metal)b.classList.add('on');
+      b.onclick=()=>{bar.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');metal=k;renderChart();};
+      seg.appendChild(b);
+    });
+    bar.appendChild(seg);
+  });
   document.querySelectorAll('#scope button').forEach(b=>{
-    b.onclick=()=>{document.querySelectorAll('#scope button').forEach(x=>x.classList.remove('on'));b.classList.add('on');scope=b.dataset.v;render();};
+    b.onclick=()=>{document.querySelectorAll('#scope button').forEach(x=>x.classList.remove('on'));b.classList.add('on');scope=b.dataset.v;renderChart();};
   });
-  document.querySelectorAll('#shiftbar button').forEach(b=>{
-    b.onclick=()=>{document.querySelectorAll('#shiftbar button').forEach(x=>x.classList.remove('on'));b.classList.add('on');liqShift=b.dataset.v==='1';render();};
+  renderChart();
+})();
+
+/* 敏感度排行（折叠内，打开时不需重绘，纯DOM） */
+(function(){
+  const list=document.getElementById('ranklist');
+  const maxAbs=Math.max(...DATA.lead_lag.map(r=>Math.abs(r.best_corr)),0.01);
+  const lagTag=l=>l>0?('流动性领先 '+l+' 月'):l<0?('资产领先 '+(-l)+' 月'):'同步';
+  DATA.lead_lag.forEach(r=>{
+    const a=DATA.assets[r.key],c=assetColor(a.group);
+    const w=Math.max(2,Math.abs(r.best_corr)/maxAbs*100);
+    const weak=Math.abs(r.best_corr)<0.15;
+    const row=document.createElement('div');row.className='row';
+    if(weak)row.style.opacity=.38;
+    row.innerHTML=`<div class="nm">${r.name}</div>
+      <div class="tag">${weak?'无稳定关系(|r|<0.15)':lagTag(r.best_lag)}</div>
+      <div class="barwrap"><div class="bar" style="width:${w}%;background:${c}"></div></div>
+      <div class="rv" style="color:${r.best_corr>=0?col('--green'):col('--red')}">${fmt(r.best_corr)}</div>`;
+    row.onclick=()=>{metal=r.key;document.querySelectorAll('#assetbar button').forEach(x=>x.classList.toggle('on',x.dataset.v===r.key));renderChart();document.getElementById('chart').scrollIntoView({behavior:'smooth'});};
+    list.appendChild(row);
   });
-}
+})();
 
-function boot(d){
-  DATA=d;
-  if(!DATA.assets[metal]) metal=DATA.asset_order[0];
-  document.getElementById('sub').textContent='复现「全球流动性条件 vs 风险资产」叠加图 — 数据更新于 '+d.updated;
-  document.getElementById('upd').textContent=' 更新时间：'+d.updated;
-  cycleMode=DATA.cycle_default||'manual';
-  bindScope(); buildAssetBar(); buildCycleBar(); buildLeadLag(); buildWeekly(); buildSummary(); buildCycles(); render();
-}
-
-if(window.DATA){ boot(window.DATA); }
-else{ fetch('data.json?_='+Date.now()).then(r=>r.json()).then(boot).catch(e=>{document.getElementById('sub').textContent='数据加载失败：'+e;}); }
-window.addEventListener('resize',()=>{chart.resize(); if(wchart)wchart.resize();});
-
-document.getElementById('saveimg').addEventListener('click',function(){
-  var btn=this; if(typeof html2canvas==='undefined'){alert('图片库未加载，请检查网络后重试');return;}
-  var old=btn.textContent; btn.disabled=true; btn.textContent='生成中…';
-  try{chart.resize(); if(wchart)wchart.resize();}catch(e){}
-  var target=document.querySelector('.wrap');
-  html2canvas(target,{backgroundColor:getComputedStyle(document.body).backgroundColor,scale:2,useCORS:true,logging:false}).then(function(canvas){
-    var d=(window.DATA&&window.DATA.latest&&window.DATA.latest.date)?window.DATA.latest.date:'';
-    canvas.toBlob(function(blob){
-      var name='全球流动性看板_'+d+'.png';
-      var file; try{ file=new File([blob],name,{type:'image/png'}); }catch(e){}
-      if(file && navigator.canShare && navigator.canShare({files:[file]})){
-        navigator.share({files:[file]}).catch(function(){});
-      } else {
-        var a=document.createElement('a');
-        a.download=name; a.href=URL.createObjectURL(blob); a.click();
-      }
-      btn.disabled=false; btn.textContent=old;
-    },'image/png');
-  }).catch(function(e){ alert('保存失败：'+e); btn.disabled=false; btn.textContent=old; });
-});
+document.getElementById('upd').textContent=' 数据更新：'+DATA.updated;
+window.addEventListener('resize',()=>{if(chart)chart.resize();if(wchart)wchart.resize();});
 </script>
 <script>
 (function(){
