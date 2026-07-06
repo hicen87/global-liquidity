@@ -235,12 +235,6 @@
 
   <div class="keys" id="keys"></div>
 
-  <!-- 一b、事件日历 -->
-  <div class="panelblk" id="evblk" style="display:none">
-    <div style="font-size:15.5px;font-weight:600">未来流动性事件 <span class="lbl" style="margin-left:6px">标签：<span class="evtag src">源头</span>=改变流动性供给 · <span class="evtag prc">定价</span>=改变利率预期 · <span class="evtag obs">观察</span>=验证信号</span></div>
-    <div class="evrow" id="evrow"></div>
-  </div>
-
   <!-- 二、逻辑链 -->
   <h2 id="chain">流动性传导链 <span class="no">点击任一环节看明细 · 信号：<span class="dot bull"></span>宽松 <span class="dot warn"></span>观察 <span class="dot bear"></span>收紧</span></h2>
   <div class="hint">水从哪来（①央行/财政）→ 流到哪里（②利率与通胀）→ 汇率确认（③美元/人民币）→ 资产温度（④哨兵资产）。①是因，④是果。<br>
@@ -255,6 +249,12 @@
   <details class="blk"><summary>五层周期定位<span class="sub">长周期背景板，变化慢，每周只微调措辞</span></summary>
     <div class="cyccards" id="cyccards"></div>
   </details>
+
+  <!-- 二b、未来流动性事件（传导链的前瞻催化） -->
+  <div class="panelblk" id="evblk" style="display:none">
+    <div style="font-size:15.5px;font-weight:600">未来流动性事件 <span class="lbl" style="margin-left:6px">紧接传导链：即将推动哪些环节 · <span class="evtag src">源头</span>=改变流动性供给 · <span class="evtag prc">定价</span>=改变利率预期 · <span class="evtag obs">观察</span>=验证信号</span></div>
+    <div class="evrow" id="evrow"></div>
+  </div>
 
   <!-- 三、配置 -->
   <h2 id="alloc">资产配置 <span class="no">按信号排序：进攻(绿) → 中性(黄) → 防御(红)</span></h2>
