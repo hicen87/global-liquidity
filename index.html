@@ -409,9 +409,8 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   ];
   const el=document.getElementById('cnbox');
   if(!el)return;
-  el.innerHTML=`<div class="cnbox">
-    <div class="ttl">中国资产双因子定位 <span style="color:var(--muted);font-weight:400;font-size:12.5px">内部M1(定底色) × 外部流动性(定分母端)</span></div>
-    <div class="sub2">A股/港股由「国内M1定基本面与相对强弱」和「外部流动性定估值分母与贝塔弹性」共同塑造，两轴交叉定象限；港股对外部流动性更敏感(高贝塔)。</div>
+  el.innerHTML=`<details class="blk"><summary>中国资产双因子定位<span class="sub">内部M1 × 外部流动性 → 当前「${cells[q].k.replace(/^\S+\s/,'')}」</span></summary>
+    <div class="sub2" style="margin-top:10px">A股/港股由「国内M1定基本面与相对强弱」和「外部流动性定估值分母与贝塔弹性」共同塑造，两轴交叉定象限；港股对外部流动性更敏感(高贝塔)。</div>
     <div class="cnmx">
       <div class="hd"></div><div class="hd">国内 M1 向上</div><div class="hd">国内 M1 向下</div>
       <div class="rh">外部流动性<b>宽松</b><br><span style="font-size:11px">转鸽/利率下行</span></div>
@@ -422,7 +421,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
       <div class="cnq ${q===3?'on':''}"><b>${cells[3].k}</b><div class="d">${cells[3].d}</div></div>
     </div>
     <div class="cnnow">当前定位：国内M1同比 <b>${cur}%</b>（3月均值趋势${m1Up?'↑回升':'↓回落'}） × <b>${extLoose?'外部宽松':'外部收紧'}</b>（流动性档位「${regime}」）→ <b style="color:var(--warn)">${cells[q].k.replace(/^\S+\s/,'')}</b>。对策：${cells[q].d}。</div>
-  </div>`;
+  </details>`;
 })();
 
 /* ---------- 一b、事件日历 ---------- */
