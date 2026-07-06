@@ -194,13 +194,21 @@
     .stancebig{font-size:21px}
     .row .tag{display:none}
   }
+  body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0);background-size:26px 26px;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 42%,transparent 78%);mask-image:linear-gradient(180deg,#000 0%,#000 42%,transparent 78%)}
+  body::after{content:"";position:fixed;top:-18vmax;left:50%;width:60vmax;height:60vmax;z-index:-1;pointer-events:none;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle, var(--glow) 0%, transparent 66%);opacity:.55;animation:bg-breathe 14s ease-in-out infinite}
+  :root{--dot:rgba(20,40,80,.09); --glow:rgba(224,145,58,.14)}
+  @keyframes bg-breathe{0%,100%{opacity:.42;transform:translateX(-50%) scale(1)}50%{opacity:.62;transform:translateX(-50%) scale(1.08)}}
+  @media(prefers-reduced-motion:reduce){body::after{animation:none}}
+  nav .brand img{width:22px;height:22px;border-radius:5px;vertical-align:-5px;margin-right:7px}
+  nav .brand{letter-spacing:.08em}
+  nav a.cur{color:var(--warm);font-weight:600}
 </style>
 </head>
 <body>
 <nav>
-  <a href="https://brassivo.com" class="brand" style="color:var(--txt);text-decoration:none;padding:0">Brassivo <span style="color:var(--muted);font-weight:400">· Liquidity</span></a>
+  <a href="https://brassivo.com" class="brand"><img src="/favicon.svg" alt="Brassivo">BRASSIVO <span style="color:var(--warm);font-weight:700">RESEARCH</span></a>
   <a href="#hero">结论</a><a href="#chain">逻辑链</a><a href="#alloc">配置</a><a href="#data">深入数据</a>
-  <a href="https://stocks.brassivo.com" style="margin-left:auto">Global Stocks →</a><a href="https://china.brassivo.com">China Stocks →</a>
+  <a href="https://investment.brassivo.com" class="cur" style="margin-left:auto">宏观流动性</a><a href="https://stocks.brassivo.com/sectors.html">美股板块</a><a href="https://china.brassivo.com/sectors.html">中国板块</a><a href="https://stocks.brassivo.com">美股个股</a><a href="https://china.brassivo.com">中国个股</a>
 </nav>
 <div class="wrap">
 
