@@ -41,47 +41,47 @@
   nav{position:sticky;top:0;z-index:50;background:var(--bg);
       border-bottom:1px solid var(--grid);display:flex;gap:4px;align-items:center;overflow-x:auto;
       padding:10px max(18px,calc((100% - 1080px)/2 + 18px))}
-  nav .brand{font-size:14px;font-weight:700;margin-right:12px;white-space:nowrap}
-  nav a{color:var(--muted);text-decoration:none;font-size:13px;padding:5px 10px;border-radius:6px;white-space:nowrap}
+  nav .brand{font-size:16.5px;font-weight:700;margin-right:12px;white-space:nowrap}
+  nav a{color:var(--muted);text-decoration:none;font-size:15.5px;padding:5px 10px;border-radius:6px;white-space:nowrap}
   nav a:hover{color:var(--txt);background:var(--panel)}
-  nav .beta{margin-left:auto;font-size:11px;color:var(--warn);border:1px solid var(--warn);border-radius:10px;padding:1px 8px;white-space:nowrap}
+  nav .beta{margin-left:auto;font-size:13px;color:var(--warn);border:1px solid var(--warn);border-radius:10px;padding:1px 8px;white-space:nowrap}
 
-  h2{font-size:15px;font-weight:600;margin:34px 0 4px;display:flex;align-items:center;gap:8px}
-  h2 .no{color:var(--muted);font-weight:400;font-size:12px}
-  .hint{color:var(--muted);font-size:12px;margin-bottom:12px;line-height:1.6}
+  h2{font-size:17.5px;font-weight:600;margin:34px 0 4px;display:flex;align-items:center;gap:8px}
+  h2 .no{color:var(--muted);font-weight:400;font-size:14px}
+  .hint{color:var(--muted);font-size:14px;margin-bottom:12px;line-height:1.6}
 
   /* ===== 第一层：结论横幅 ===== */
   .hero{background:linear-gradient(160deg,var(--panel3),var(--panel));border:1px solid var(--grid);border-radius:14px;padding:20px 22px;margin-top:16px}
   .hero .row1{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .stancebig{font-size:22px;font-weight:800;letter-spacing:.5px}
-  .stancetag{background:var(--red);color:#fff;font-size:12px;padding:4px 12px;border-radius:20px;font-weight:600}
-  .hero .date{color:var(--muted);font-size:12px}
+  .stancebig{font-size:26px;font-weight:800;letter-spacing:.5px}
+  .stancetag{background:var(--red);color:#fff;font-size:14px;padding:4px 12px;border-radius:20px;font-weight:600}
+  .hero .date{color:var(--muted);font-size:14px}
   .gauge{display:flex;align-items:center;gap:14px;margin:16px 0 4px;flex-wrap:wrap}
   .gaugebar{flex:1;min-width:220px;max-width:420px}
   .gaugebar .track{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--green),var(--warn) 45%,var(--red));position:relative}
   .gaugebar .pin{position:absolute;top:-5px;width:4px;height:20px;background:#fff;border-radius:2px;box-shadow:0 0 6px rgba(255,255,255,.8)}
   .gaugebar .pin.ghost{background:rgba(255,255,255,.35);box-shadow:none;width:3px}
-  .gaugebar .pin.ghost::after{content:'上期';position:absolute;top:-15px;left:-12px;font-size:9px;color:var(--muted);white-space:nowrap}
-  .gdelta{font-size:12px;font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid;white-space:nowrap}
+  .gaugebar .pin.ghost::after{content:'上期';position:absolute;top:-15px;left:-12px;font-size:10.5px;color:var(--muted);white-space:nowrap}
+  .gdelta{font-size:14px;font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid;white-space:nowrap}
   .gdelta.loose{color:var(--green);border-color:var(--green)}
   .gdelta.tightn{color:var(--red);border-color:var(--red)}
   .gdelta.flat{color:var(--muted);border-color:var(--grid)}
-  .gaugebar .lbls{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px}
-  .gauge .reading{font-size:13px}
-  .gauge .reading b{font-size:16px}
+  .gaugebar .lbls{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+  .gauge .reading{font-size:15.5px}
+  .gauge .reading b{font-size:19px}
   .bullets{margin-top:14px;border-top:1px solid var(--grid);padding-top:12px}
-  .bullets .ttl{font-size:12px;color:var(--blue);font-weight:600;margin-bottom:6px}
-  .bullets li{font-size:13px;line-height:1.8;color:var(--txt);margin-left:18px}
+  .bullets .ttl{font-size:14px;color:var(--blue);font-weight:600;margin-bottom:6px}
+  .bullets li{font-size:15.5px;line-height:1.8;color:var(--txt);margin-left:18px}
   .bullets details{margin-top:6px}
-  .bullets summary{cursor:pointer;color:var(--muted);font-size:12px}
-  .bullets .full{color:var(--muted);font-size:12px;line-height:1.8;margin-top:6px}
+  .bullets summary{cursor:pointer;color:var(--muted);font-size:14px}
+  .bullets .full{color:var(--muted);font-size:14px;line-height:1.8;margin-top:6px}
 
   /* 关键数字卡 */
   .keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
   .kcard{background:var(--panel);border:1px solid var(--grid);border-radius:10px;padding:12px 16px}
-  .kcard .k{color:var(--muted);font-size:12px}
-  .kcard .v{font-size:22px;font-weight:700;margin-top:4px}
-  .kcard .s{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+  .kcard .k{color:var(--muted);font-size:14px}
+  .kcard .v{font-size:26px;font-weight:700;margin-top:4px}
+  .kcard .s{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5}
   .pos{color:var(--green)}.neg{color:var(--red)}
 
   /* ===== 事件日历 ===== */
@@ -89,12 +89,12 @@
   .ev{min-width:180px;max-width:230px;flex-shrink:0;background:var(--panel2);border:1px solid var(--grid);border-radius:9px;padding:10px 12px;position:relative}
   .ev.today{border-color:var(--warn)}
   .ev.past{opacity:.35}
-  .ev .d{font-size:12px;font-weight:700;color:var(--idx)}
-  .ev .d .wd{color:var(--muted);font-weight:400;font-size:11px;margin-left:4px}
-  .ev .n{font-size:13px;font-weight:600;margin:4px 0;line-height:1.4}
-  .ev .note{font-size:11px;color:var(--muted);line-height:1.5}
-  .ev .cd{position:absolute;top:9px;right:10px;font-size:10px;color:var(--warn)}
-  .evtag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;border:1px solid;margin-right:4px;vertical-align:middle}
+  .ev .d{font-size:14px;font-weight:700;color:var(--idx)}
+  .ev .d .wd{color:var(--muted);font-weight:400;font-size:13px;margin-left:4px}
+  .ev .n{font-size:15.5px;font-weight:600;margin:4px 0;line-height:1.4}
+  .ev .note{font-size:13px;color:var(--muted);line-height:1.5}
+  .ev .cd{position:absolute;top:9px;right:10px;font-size:12px;color:var(--warn)}
+  .evtag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:9px;border:1px solid;margin-right:4px;vertical-align:middle}
   .evtag.src{color:#e5654a;border-color:#8a3a2c}
   .evtag.prc{color:var(--warn);border-color:#8a7326}
   .evtag.obs{color:var(--muted);border-color:var(--grid)}
@@ -105,84 +105,84 @@
   .chain .step{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--grid);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
   .chain .step:hover{border-color:var(--blue)}
   .chain .step.open{border-color:var(--blue);background:var(--panel3)}
-  .chain .arrow{align-self:center;color:var(--muted);font-size:16px}
-  .chain .sn{font-size:12px;color:var(--muted)}
-  .chain .sname{font-size:14px;font-weight:700;margin:3px 0}
-  .chain .sig{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+  .chain .arrow{align-self:center;color:var(--muted);font-size:19px}
+  .chain .sn{font-size:14px;color:var(--muted)}
+  .chain .sname{font-size:16.5px;font-weight:700;margin:3px 0}
+  .chain .sig{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%}
   .dot.bull{background:var(--green)}.dot.warn{background:var(--warn)}.dot.bear{background:var(--red)}
   .chaindetail{display:none;background:var(--panel);border:1px solid var(--blue);border-radius:10px;margin-top:10px;padding:6px 14px}
   .chaindetail.show{display:block}
-  .chaindetail table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+  .chaindetail table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
   .chaindetail td{padding:8px 8px;border-bottom:1px solid var(--grid);line-height:1.6;word-break:break-word;overflow-wrap:anywhere;vertical-align:top}
   .chaindetail tr:last-child td{border-bottom:none}
   .chaindetail td:first-child{font-weight:600;width:26%}
   .chaindetail td:nth-child(2){color:var(--idx);width:36%}
   .chaindetail td:last-child{color:var(--muted)}
-  .chg{font-size:10px;padding:0 5px;border-radius:8px;border:1px solid;margin-left:5px;font-weight:600;white-space:nowrap}
+  .chg{font-size:12px;padding:0 5px;border-radius:8px;border:1px solid;margin-left:5px;font-weight:600;white-space:nowrap}
   .chg.mod{color:#bc8cff;border-color:#bc8cff}.chg.add{color:var(--idx);border-color:var(--idx)}
   .chg.up{color:var(--green);border-color:var(--green)}.chg.down{color:var(--red);border-color:var(--red)}
 
   /* 商品时钟 */
   .clockrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-  .clockrow .cstep{flex:1;min-width:110px;text-align:center;padding:8px 6px;border:1px solid var(--grid);border-radius:8px;background:var(--panel2);font-size:12px;color:var(--muted)}
+  .clockrow .cstep{flex:1;min-width:110px;text-align:center;padding:8px 6px;border:1px solid var(--grid);border-radius:8px;background:var(--panel2);font-size:14px;color:var(--muted)}
   .clockrow .cstep.active{border-color:var(--red);color:var(--txt);background:rgba(192,57,43,.12)}
   .clockrow .carrow{align-self:center;color:var(--muted)}
-  .clocknote{color:var(--muted);font-size:11px;margin-top:6px;line-height:1.6}
+  .clocknote{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.6}
 
   /* 周期卡（折叠） */
   details.blk{background:var(--panel);border:1px solid var(--grid);border-radius:10px;margin-top:12px;padding:12px 16px}
-  details.blk summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--txt)}
-  details.blk summary .sub{color:var(--muted);font-weight:400;font-size:11px;margin-left:8px}
+  details.blk summary{cursor:pointer;font-size:15.5px;font-weight:600;color:var(--txt)}
+  details.blk summary .sub{color:var(--muted);font-weight:400;font-size:13px;margin-left:8px}
   .cyccards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:12px}
   .cyc{background:var(--panel2);border:1px solid var(--grid);border-radius:8px;padding:10px 12px}
-  .cyc .k{color:var(--muted);font-size:11px}
-  .cyc .st{font-size:12px;font-weight:600;margin-top:4px;line-height:1.5}
+  .cyc .k{color:var(--muted);font-size:13px}
+  .cyc .st{font-size:14px;font-weight:600;margin-top:4px;line-height:1.5}
   .pbar{height:5px;background:var(--grid);border-radius:3px;margin-top:8px;overflow:hidden}
   .pbar i{display:block;height:100%;border-radius:3px}
 
   /* ===== 第三层：配置 ===== */
   .alloc{background:var(--panel);border:1px solid var(--grid);border-radius:12px;padding:14px 18px}
-  .alloc table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+  .alloc table{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}
   .alloc td{padding:8px 8px;border-bottom:1px solid var(--grid);line-height:1.6;word-break:break-word;overflow-wrap:anywhere;vertical-align:middle}
   .alloc tr:last-child td{border-bottom:none}
   .alloc td:first-child{width:17%;font-weight:600}
   .alloc td:nth-child(2){width:19%}
   .alloc td:last-child{color:var(--muted)}
-  .pill{display:inline-block;padding:3px 12px;border-radius:16px;font-size:12px;font-weight:600;border:1px solid;white-space:nowrap}
+  .pill{display:inline-block;padding:3px 12px;border-radius:16px;font-size:14px;font-weight:600;border:1px solid;white-space:nowrap}
   .pill.g{color:#46c583;border-color:#2f7d55;background:rgba(70,197,131,.08)}
   .pill.y{color:#e2b24a;border-color:#8a7326;background:rgba(226,178,74,.08)}
   .pill.r{color:#e5654a;border-color:#8a3a2c;background:rgba(229,101,74,.08)}
-  .trig{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px}
+  .trig{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:14px}
   .trig div{flex:1;min-width:280px;background:var(--panel2);border-radius:8px;padding:10px 12px;line-height:1.7}
-  .risk{color:var(--muted);font-size:11.5px;line-height:1.8;margin-top:8px}
+  .risk{color:var(--muted);font-size:13.5px;line-height:1.8;margin-top:8px}
 
   /* ===== 第四层：数据 ===== */
-  .cbar{background:var(--panel2);border:1px solid var(--grid);border-radius:8px;padding:10px 12px;font-size:12px;margin:10px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .cbar{background:var(--panel2);border:1px solid var(--grid);border-radius:8px;padding:10px 12px;font-size:14px;margin:10px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
   .cbar .ok{color:var(--green);font-weight:600}.cbar .bad{color:var(--red);font-weight:600}
   .cbar ul{margin:4px 0 0;padding-left:18px;color:#e08a7a;width:100%;line-height:1.6}
   #weekchart{height:260px}
   #chart{height:480px}
   .panelblk{background:var(--panel);border:1px solid var(--grid);border-radius:12px;padding:14px 18px;margin-top:12px}
   .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
-  .lbl{color:var(--muted);font-size:12px}
+  .lbl{color:var(--muted);font-size:14px}
   .seg{display:inline-flex;background:var(--panel2);border:1px solid var(--grid);border-radius:8px;overflow:hidden;flex-wrap:wrap}
-  .seg button{background:transparent;color:var(--muted);border:0;padding:6px 12px;cursor:pointer;font-size:12.5px}
+  .seg button{background:transparent;color:var(--muted);border:0;padding:6px 12px;cursor:pointer;font-size:15px}
   .seg button.on{background:var(--blue);color:#fff}
   .row{display:flex;align-items:center;gap:10px;padding:4px 0;cursor:pointer;border-radius:6px}
   .row:hover{background:var(--panel3)}
-  .row .nm{width:96px;font-size:13px;flex-shrink:0}
-  .row .tag{width:130px;font-size:11px;color:var(--muted);flex-shrink:0}
+  .row .nm{width:96px;font-size:15.5px;flex-shrink:0}
+  .row .tag{width:130px;font-size:13px;color:var(--muted);flex-shrink:0}
   .row .barwrap{flex:1;height:12px;background:var(--panel2);border-radius:6px;overflow:hidden}
   .row .bar{height:100%;border-radius:6px}
-  .row .rv{width:52px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
-  .foot{color:var(--muted);font-size:11.5px;line-height:1.8;margin-top:30px;border-top:1px solid var(--grid);padding-top:14px}
+  .row .rv{width:52px;text-align:right;font-size:14px;font-variant-numeric:tabular-nums}
+  .foot{color:var(--muted);font-size:13.5px;line-height:1.8;margin-top:30px;border-top:1px solid var(--grid);padding-top:14px}
   .foot b{color:var(--txt)}
   @media(max-width:640px){
     .chain .arrow{display:none}
     .chain .step{min-width:calc(50% - 8px)}
     #chart{height:400px}
-    .stancebig{font-size:18px}
+    .stancebig{font-size:21px}
     .row .tag{display:none}
   }
 </style>
@@ -192,7 +192,7 @@
   <a href="https://brassivo.com" class="brand" style="color:var(--txt);text-decoration:none;padding:0">Brassivo <span style="color:var(--muted);font-weight:400">· Liquidity</span></a>
   <a href="#hero">结论</a><a href="#chain">逻辑链</a><a href="#alloc">配置</a><a href="#data">深入数据</a>
   <a href="https://stocks.brassivo.com" style="margin-left:auto">Global Stocks →</a><a href="https://china.brassivo.com">China Stocks →</a>
-  <button id="themeBtn" onclick="(function(){var d=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.cookie='brassivo_theme='+d+'; domain=.brassivo.com; path=/; max-age=31536000; SameSite=Lax';location.reload();})()" style="cursor:pointer;border:1px solid var(--grid);background:var(--panel);color:var(--muted);font-size:12px;padding:4px 10px;border-radius:6px;white-space:nowrap">深色/浅色</button>
+  <button id="themeBtn" onclick="(function(){var d=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.cookie='brassivo_theme='+d+'; domain=.brassivo.com; path=/; max-age=31536000; SameSite=Lax';location.reload();})()" style="cursor:pointer;border:1px solid var(--grid);background:var(--panel);color:var(--muted);font-size:14px;padding:4px 10px;border-radius:6px;white-space:nowrap">深色/浅色</button>
 </nav>
 <div class="wrap">
 
@@ -210,7 +210,7 @@
         <div class="track"><div class="pin ghost" id="gprev" style="display:none"></div><div class="pin" id="gpin" style="left:50%"></div></div>
         <div class="lbls"><span>中性偏松</span><span>边际收紧</span><span>收紧</span></div>
       </div>
-      <span class="reading" style="color:var(--muted);font-size:11px" id="gsub"></span>
+      <span class="reading" style="color:var(--muted);font-size:13px" id="gsub"></span>
     </div>
     <div class="bullets">
       <div class="ttl">本周要点</div>
@@ -223,7 +223,7 @@
 
   <!-- 一b、事件日历 -->
   <div class="panelblk" id="evblk" style="display:none">
-    <div style="font-size:13px;font-weight:600">未来流动性事件 <span class="lbl" style="margin-left:6px">标签：<span class="evtag src">源头</span>=改变流动性供给 · <span class="evtag prc">定价</span>=改变利率预期 · <span class="evtag obs">观察</span>=验证信号</span></div>
+    <div style="font-size:15.5px;font-weight:600">未来流动性事件 <span class="lbl" style="margin-left:6px">标签：<span class="evtag src">源头</span>=改变流动性供给 · <span class="evtag prc">定价</span>=改变利率预期 · <span class="evtag obs">观察</span>=验证信号</span></div>
     <div class="evrow" id="evrow"></div>
   </div>
 
@@ -234,7 +234,7 @@
   <div class="chain" id="chainrow"></div>
   <div class="chaindetail" id="chaindetail"><table><tbody></tbody></table></div>
 
-  <div style="font-size:13px;font-weight:600;margin-top:22px">商品轮动时钟 <span class="lbl" style="font-weight:400;margin-left:6px">一轮周期里商品按固定顺序接力上涨——看轮到谁，就知道周期走到哪；③原油启动 = 周期尾声警报</span></div>
+  <div style="font-size:15.5px;font-weight:600;margin-top:22px">商品轮动时钟 <span class="lbl" style="font-weight:400;margin-left:6px">一轮周期里商品按固定顺序接力上涨——看轮到谁，就知道周期走到哪；③原油启动 = 周期尾声警报</span></div>
   <div class="clockrow" id="clockrow"></div>
   <div class="clocknote" id="clocknote"></div>
 
@@ -250,7 +250,7 @@
       <div><b style="color:var(--green)">什么时候加风险</b><br><span id="addsig"></span></div>
       <div><b style="color:var(--red)">什么时候减风险</b><br><span id="redsig"></span></div>
     </div>
-    <details><summary style="cursor:pointer;color:var(--blue);font-size:12px;margin-top:8px">风险与反证 / 免责</summary><div class="risk" id="risks"></div></details>
+    <details><summary style="cursor:pointer;color:var(--blue);font-size:14px;margin-top:8px">风险与反证 / 免责</summary><div class="risk" id="risks"></div></details>
   </div>
 
   <!-- 四、深入数据 -->
@@ -258,13 +258,13 @@
   <div id="checkbar"></div>
 
   <div class="panelblk">
-    <div style="font-size:13px;font-weight:600">美元流动性管道（周频）<span class="lbl" style="margin-left:8px">净流动性 = 美联储总资产 − 财政部账户TGA − 逆回购RRP</span></div>
+    <div style="font-size:15.5px;font-weight:600">美元流动性管道（周频）<span class="lbl" style="margin-left:8px">净流动性 = 美联储总资产 − 财政部账户TGA − 逆回购RRP</span></div>
     <div class="keys" id="wkeys" style="margin-top:10px"></div>
     <div id="weekchart"></div>
   </div>
 
   <div class="panelblk">
-    <div style="font-size:13px;font-weight:600">全球流动性 vs 资产价格（月度）</div>
+    <div style="font-size:15.5px;font-weight:600">全球流动性 vs 资产价格（月度）</div>
     <div class="controls">
       <span class="lbl">口径</span>
       <div class="seg" id="scope"><button data-v="g3" class="on">G3 美欧日</button><button data-v="g4">G4 +中国</button></div>
@@ -365,7 +365,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
       <div class="v ${sgn(Ld.yoy3)}">${fmt(Ld.yoy3)}%</div>
       <div class="s">固定汇率口径 <b class="${sgn(Ld.yoy3_fx)}">${fmt(Ld.yoy3_fx)}%</b> · 差值${fmt(Ld.yoy3-Ld.yoy3_fx)}%是美元汇率贡献</div></div>
     <div class="kcard"><div class="k">美元净流动性（周频·当下水位）</div>
-      <div class="v">${L?L.netliq:'—'} <span style="font-size:13px;color:var(--muted)">万亿$</span></div>
+      <div class="v">${L?L.netliq:'—'} <span style="font-size:15.5px;color:var(--muted)">万亿$</span></div>
       <div class="s">周环比 <b class="${L&&L.wow>=0?'pos':'neg'}">${L?pm(L.wow):'—'}</b> · 13周 <b class="${(w13pct??0)>=0?'pos':'neg'}">${w13pct!=null?fmt(w13pct)+'%':'—'}</b></div></div>
     <div class="kcard"><div class="k">中国锚 M1 同比（"M1定买卖"）</div>
       <div class="v ${cn&&cn.m1>=0?'pos':'neg'}">${cn?cn.m1+'%':'—'}</div>
@@ -457,7 +457,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   const steps=[['① 金银贵金属','货币属性·闻到放水先涨'],['② 有色金属(铜铝)','实体需求回暖接棒'],['③ 原油启动','通胀全面抬头才涨'],['④ 周期尾声','油价倒逼央行收紧']];
   const clockBd=(P&&P.clockStage!==undefined&&P.clockStage!==S.clockStage)?B.mod:'';
   document.getElementById('clockrow').innerHTML=steps.map((s,i)=>
-    `<div class="cstep${i===S.clockStage?' active':''}">${s[0]}${i===S.clockStage?clockBd+' <span style="font-size:10px;color:var(--red)">← 当前</span>':''}<br><span style="font-size:10px;opacity:.75">${s[1]}</span></div>`
+    `<div class="cstep${i===S.clockStage?' active':''}">${s[0]}${i===S.clockStage?clockBd+' <span style="font-size:12px;color:var(--red)">← 当前</span>':''}<br><span style="font-size:12px;opacity:.75">${s[1]}</span></div>`
   ).join('<div class="carrow">→</div>');
   document.getElementById('clocknote').textContent=S.clockNote||'';
 })();
@@ -523,9 +523,9 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   if(!W)return;
   const sgn=v=>v>=0?'pos':'neg';
   document.getElementById('wkeys').innerHTML=`
-    <div class="kcard"><div class="k">净流动性</div><div class="v">${L.netliq}<span style="font-size:12px;color:var(--muted)"> 万亿$</span></div><div class="s">截至 ${L.date}</div></div>
-    <div class="kcard"><div class="k">ON RRP / 准备金</div><div class="v" style="font-size:17px">${L.rrp}十亿 / ${L.reserves}万亿</div><div class="s">RRP≈0 = 缓冲耗尽</div></div>
-    <div class="kcard"><div class="k">SOFR−IORB</div><div class="v ${L.spread>5?'neg':'pos'}" style="font-size:17px">${pm(L.spread)} bp</div><div class="s">&gt;+5bp = 回购紧张</div></div>`;
+    <div class="kcard"><div class="k">净流动性</div><div class="v">${L.netliq}<span style="font-size:14px;color:var(--muted)"> 万亿$</span></div><div class="s">截至 ${L.date}</div></div>
+    <div class="kcard"><div class="k">ON RRP / 准备金</div><div class="v" style="font-size:20px">${L.rrp}十亿 / ${L.reserves}万亿</div><div class="s">RRP≈0 = 缓冲耗尽</div></div>
+    <div class="kcard"><div class="k">SOFR−IORB</div><div class="v ${L.spread>5?'neg':'pos'}" style="font-size:20px">${pm(L.spread)} bp</div><div class="s">&gt;+5bp = 回购紧张</div></div>`;
   wchart=echarts.init(document.getElementById('weekchart'));
   wchart.setOption({
     backgroundColor:'transparent',
@@ -628,7 +628,7 @@ window.addEventListener('resize',()=>{if(chart)chart.resize();if(wchart)wchart.r
     w.style.maxHeight='110vh'; w.style.overflow='hidden'; w.style.position='relative';
     var ov=document.createElement('div');
     ov.style.cssText='position:absolute;left:0;right:0;bottom:0;height:60vh;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(to bottom, rgba(0,0,0,0), var(--bg) 55%);z-index:99';
-    ov.innerHTML='<div style="text-align:center;padding-bottom:8vh;max-width:420px;width:90%"><div style="font-size:17px;font-weight:600;margin-bottom:6px">解锁全文 · 首月免费</div><div style="font-size:13px;opacity:.75;margin-bottom:14px">留下邮箱即可免费试用1个月，浏览全站完整内容（AI产业链选股表 + 全球流动性看板，每周自动更新）。到期后可订阅专业版（$24.9/月 · 年付$189）。</div><form id="bsubf" style="display:flex;gap:8px;justify-content:center"><input id="bsube" type="email" required placeholder="you@email.com" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;font-size:13px"><button style="padding:9px 16px;border-radius:8px;border:none;background:#e0913a;color:#fff;font-weight:600;font-size:13px;cursor:pointer">免费试用</button></form><div id="bsubm" style="font-size:12px;margin-top:8px;opacity:.7"></div><div style="font-size:12px;margin-top:10px"><a href="https://brassivo.com/#" style="color:inherit;opacity:.7">已有激活 Key？去主页激活 →</a></div></div>';
+    ov.innerHTML='<div style="text-align:center;padding-bottom:8vh;max-width:420px;width:90%"><div style="font-size:20px;font-weight:600;margin-bottom:6px">解锁全文 · 首月免费</div><div style="font-size:15.5px;opacity:.75;margin-bottom:14px">留下邮箱即可免费试用1个月，浏览全站完整内容（AI产业链选股表 + 全球流动性看板，每周自动更新）。到期后可订阅专业版（$24.9/月 · 年付$189）。</div><form id="bsubf" style="display:flex;gap:8px;justify-content:center"><input id="bsube" type="email" required placeholder="you@email.com" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;font-size:15.5px"><button style="padding:9px 16px;border-radius:8px;border:none;background:#e0913a;color:#fff;font-weight:600;font-size:15.5px;cursor:pointer">免费试用</button></form><div id="bsubm" style="font-size:14px;margin-top:8px;opacity:.7"></div><div style="font-size:14px;margin-top:10px"><a href="https://brassivo.com/#" style="color:inherit;opacity:.7">已有激活 Key？去主页激活 →</a></div></div>';
     w.appendChild(ov);
     document.getElementById('bsubf').addEventListener('submit', function(e){
       e.preventDefault();
