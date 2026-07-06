@@ -409,7 +409,9 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   ];
   const el=document.getElementById('cnbox');
   if(!el)return;
-  el.innerHTML=`<details class="blk"><summary>中国资产双因子定位<span class="sub">内部M1 × 外部流动性 → 当前「${cells[q].k.replace(/^\S+\s/,'')}」</span></summary>
+  const m1Sig=m1Up?{t:'持有 / 可加',c:'var(--green)'}:{t:'减仓 / 观望',c:'var(--red)'};
+  el.innerHTML=`<details class="blk"><summary>中国资产双因子定位<span class="sub">M1择时 → <b style="color:${m1Sig.c}">${m1Sig.t}</b> · 场景「${cells[q].k.replace(/^\S+\s/,'')}」</span></summary>
+    <div class="cnnow" style="border:none;padding:0;margin:10px 0 4px">📌 <b>中国资产择时信号（按 M1 单因子，回测最优）：M1 <b style="color:${m1Sig.c}">${m1Up?'回升 → 持有 / 可加仓':'回落 → 减仓 / 观望'}</b></b><br><span style="font-size:12px;color:var(--muted)">20年回测：沪深300按此机械择时，最大回撤 -71% → -25%、收益基本持平；恒生收益回撤双赢。买卖动作以此为准；下面 2×2 象限仅作场景背景。</span></div>
     <div class="sub2" style="margin-top:10px">A股/港股由「国内M1定基本面与相对强弱」和「外部流动性定估值分母与贝塔弹性」共同塑造，两轴交叉定象限；港股对外部流动性更敏感(高贝塔)。</div>
     <div class="cnmx">
       <div class="hd"></div><div class="hd">国内 M1 向上</div><div class="hd">国内 M1 向下</div>
