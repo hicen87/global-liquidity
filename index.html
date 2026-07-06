@@ -385,7 +385,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
     <div class="kcard"><div class="k">美元净流动性（周频·当下水位）</div>
       <div class="v">${L?L.netliq:'—'} <span style="font-size:15.5px;color:var(--muted)">万亿$</span></div>
       <div class="s">周环比 <b class="${L&&L.wow>=0?'pos':'neg'}">${L?pm(L.wow):'—'}</b> · 13周 <b class="${(w13pct??0)>=0?'pos':'neg'}">${w13pct!=null?fmt(w13pct)+'%':'—'}</b></div></div>
-    <div class="kcard"><div class="k">中国锚 M1 同比（"M1定买卖"）</div>
+    <div class="kcard"><div class="k">中国锚 M1 同比（月度）</div>
       <div class="v ${cn&&cn.m1>=0?'pos':'neg'}">${cn?cn.m1+'%':'—'}</div>
       <div class="s">M2 ${cn?cn.m2+'%':'—'} · 与外部流动性共同决定中国资产</div></div>`;
 })();
