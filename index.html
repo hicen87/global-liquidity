@@ -581,7 +581,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   wchart=echarts.init(document.getElementById('weekchart'));
   wchart.setOption({
     backgroundColor:'transparent',
-    tooltip:{trigger:'axis',backgroundColor:'rgba(14,28,56,.95)',borderColor:col('--grid'),textStyle:{color:col('--txt'),fontSize:12}},
+    tooltip:{trigger:'axis',backgroundColor:col('--panel'),borderColor:col('--grid'),textStyle:{color:col('--txt'),fontSize:12},extraCssText:'box-shadow:0 4px 16px rgba(0,0,0,.12);border-radius:8px'},
     legend:{top:2,textStyle:{color:col('--muted')},data:['净流动性(万亿$)','SOFR−IORB(bp)']},
     grid:{left:52,right:54,top:30,bottom:30},
     xAxis:{type:'time',axisLine:{lineStyle:{color:col('--grid')}},axisLabel:{color:col('--muted')},splitLine:{show:false}},
@@ -606,7 +606,7 @@ function renderChart(){
   const m1Name='中国M1同比%';
   chart.setOption({
     backgroundColor:'transparent',animationDuration:400,
-    tooltip:{trigger:'axis',backgroundColor:'rgba(14,28,56,.95)',borderColor:col('--grid'),textStyle:{color:col('--txt'),fontSize:12}},
+    tooltip:{trigger:'axis',backgroundColor:col('--panel'),borderColor:col('--grid'),textStyle:{color:col('--txt'),fontSize:12},extraCssText:'box-shadow:0 4px 16px rgba(0,0,0,.12);border-radius:8px'},
     legend:{top:2,textStyle:{color:col('--muted')},data:[liqName].concat(fxS?['固定汇率口径']:[]).concat(m1S?[m1Name]:[]).concat([a.name+' 价格'])},
     grid:{left:54,right:64,top:36,bottom:58},
     xAxis:{type:'time',axisLine:{lineStyle:{color:col('--grid')}},axisLabel:{color:col('--muted')},splitLine:{show:false}},
