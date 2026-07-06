@@ -84,6 +84,20 @@
   .kcard .s{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5}
   .pos{color:var(--green)}.neg{color:var(--red)}
 
+  /* 中国资产双因子定位 */
+  .cnbox{background:var(--panel);border:1px solid var(--grid);border-radius:12px;padding:14px 18px}
+  .cnbox .ttl{font-size:15px;font-weight:600}
+  .cnbox .sub2{color:var(--muted);font-size:13.5px;margin:4px 0 12px;line-height:1.6}
+  .cnmx{display:grid;grid-template-columns:96px 1fr 1fr;gap:8px}
+  .cnmx .hd{color:var(--muted);font-size:12.5px;text-align:center;align-self:center;font-weight:600}
+  .cnmx .rh{color:var(--muted);font-size:12.5px;align-self:center;line-height:1.5}
+  .cnq{border:1px solid var(--grid);border-radius:8px;padding:9px 11px;background:var(--panel2);line-height:1.5}
+  .cnq b{font-size:14px}
+  .cnq .d{color:var(--muted);font-size:12px;margin-top:3px}
+  .cnq.on{border-color:var(--warn);background:rgba(226,178,74,.14);box-shadow:0 0 0 1px var(--warn) inset}
+  .cnnow{font-size:13.5px;margin-top:12px;line-height:1.8;border-top:1px solid var(--grid);padding-top:10px}
+  @media(max-width:560px){.cnmx{grid-template-columns:64px 1fr 1fr;gap:5px}.cnq b{font-size:12.5px}.cnq .d{font-size:11px}}
+
   /* ===== 事件日历 ===== */
   .evrow{display:flex;gap:10px;overflow-x:auto;margin-top:10px;padding-bottom:4px}
   .ev{min-width:180px;max-width:230px;flex-shrink:0;background:var(--panel2);border:1px solid var(--grid);border-radius:9px;padding:10px 12px;position:relative}
@@ -221,6 +235,9 @@
 
   <div class="keys" id="keys"></div>
 
+  <!-- 一a2、中国资产双因子定位 -->
+  <div id="cnbox" style="margin-top:14px"></div>
+
   <!-- 一b、事件日历 -->
   <div class="panelblk" id="evblk" style="display:none">
     <div style="font-size:15.5px;font-weight:600">未来流动性事件 <span class="lbl" style="margin-left:6px">标签：<span class="evtag src">源头</span>=改变流动性供给 · <span class="evtag prc">定价</span>=改变利率预期 · <span class="evtag obs">观察</span>=验证信号</span></div>
@@ -268,7 +285,7 @@
     <div class="controls">
       <span class="lbl">口径</span>
       <div class="seg" id="scope"><button data-v="g3" class="on">G3 美欧日</button><button data-v="g4">G4 +中国</button></div>
-      <span class="lbl" id="fxhint">蓝实线=现汇 · 紫虚线=固定汇率（两线张开的距离=汇率贡献）</span>
+      <span class="lbl" id="fxhint">虚线=流动性指标（蓝=现汇 · 紫=固定汇率 · 黄=中国M1）· 实线=标的资产价格</span>
     </div>
     <div class="controls" id="assetbar"></div>
     <div id="chart"></div>
@@ -369,7 +386,40 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
       <div class="s">周环比 <b class="${L&&L.wow>=0?'pos':'neg'}">${L?pm(L.wow):'—'}</b> · 13周 <b class="${(w13pct??0)>=0?'pos':'neg'}">${w13pct!=null?fmt(w13pct)+'%':'—'}</b></div></div>
     <div class="kcard"><div class="k">中国锚 M1 同比（"M1定买卖"）</div>
       <div class="v ${cn&&cn.m1>=0?'pos':'neg'}">${cn?cn.m1+'%':'—'}</div>
-      <div class="s">M2 ${cn?cn.m2+'%':'—'} · 决定A股/港股相对表现</div></div>`;
+      <div class="s">M2 ${cn?cn.m2+'%':'—'} · 与外部流动性共同决定中国资产</div></div>`;
+})();
+
+/* ---------- 一a2、中国资产双因子定位（内部M1 × 外部流动性，自动定象限） ---------- */
+(function(){
+  const m1s=DATA.china_liq&&DATA.china_liq.m1_yoy;
+  if(!m1s||!m1s.values||!m1s.values.length)return;
+  const v=m1s.values, n=v.length;
+  const cur=v[n-1], prev=v[Math.max(0,n-4)];      // 约3个月前
+  const m1Up=cur>=prev;
+  const extLoose=tight<0.8;                         // 中性偏松=宽松，否则收紧
+  const q=extLoose?(m1Up?0:1):(m1Up?2:3);
+  const cells=[
+    {k:'🚀 戴维斯双击', d:'内外资共振，港股/A股成长股暴涨'},
+    {k:'⚖️ 东边日出西边雨', d:'外资流入抢估值修复，受限国内基本面，多短线反弹或核心资产'},
+    {k:'🛡️ 内需独立行情', d:'大盘受估值压制，但A股防御/价值/高股息走独立牛市'},
+    {k:'📉 戴维斯双杀', d:'内外水源同枯，系统性出清压力，防御持仓为主'}
+  ];
+  const el=document.getElementById('cnbox');
+  if(!el)return;
+  el.innerHTML=`<div class="cnbox">
+    <div class="ttl">中国资产双因子定位 <span style="color:var(--muted);font-weight:400;font-size:12.5px">内部M1(定底色) × 外部流动性(定分母端)</span></div>
+    <div class="sub2">A股/港股由「国内M1定基本面与相对强弱」和「外部流动性定估值分母与贝塔弹性」共同塑造，两轴交叉定象限；港股对外部流动性更敏感(高贝塔)。</div>
+    <div class="cnmx">
+      <div class="hd"></div><div class="hd">国内 M1 向上</div><div class="hd">国内 M1 向下</div>
+      <div class="rh">外部流动性<b>宽松</b><br><span style="font-size:11px">转鸽/利率下行</span></div>
+      <div class="cnq ${q===0?'on':''}"><b>${cells[0].k}</b><div class="d">${cells[0].d}</div></div>
+      <div class="cnq ${q===1?'on':''}"><b>${cells[1].k}</b><div class="d">${cells[1].d}</div></div>
+      <div class="rh">外部流动性<b>收紧</b><br><span style="font-size:11px">强美元/缩表</span></div>
+      <div class="cnq ${q===2?'on':''}"><b>${cells[2].k}</b><div class="d">${cells[2].d}</div></div>
+      <div class="cnq ${q===3?'on':''}"><b>${cells[3].k}</b><div class="d">${cells[3].d}</div></div>
+    </div>
+    <div class="cnnow">当前定位：国内M1同比 <b>${cur}%</b>（近3月${m1Up?'↑回升':'↓回落'}） × <b>${extLoose?'外部宽松':'外部收紧'}</b>（流动性档位「${regime}」）→ <b style="color:var(--warn)">${cells[q].k.replace(/^\S+\s/,'')}</b>。对策：${cells[q].d}。</div>
+  </div>`;
 })();
 
 /* ---------- 一b、事件日历 ---------- */
@@ -562,7 +612,7 @@ function renderChart(){
            {type:'value',name:a.name+'('+a.unit+')',position:'right',scale:true,axisLabel:{color:mCol},splitLine:{show:false}}],
     dataZoom:[{type:'inside',startValue:z3y()},{type:'slider',height:16,bottom:26,startValue:z3y(),borderColor:col('--grid'),fillerColor:'rgba(58,123,213,.2)',textStyle:{color:col('--muted')}}],
     series:[
-      {name:liqName,type:'line',showSymbol:false,smooth:true,lineStyle:{color:col('--blue'),width:1.6},areaStyle:{color:col('--blue'),opacity:.2},
+      {name:liqName,type:'line',showSymbol:false,smooth:true,lineStyle:{color:col('--blue'),width:1.8,type:'dashed'},areaStyle:{color:col('--blue'),opacity:.14},
        markLine:{symbol:'none',silent:true,lineStyle:{color:col('--muted'),opacity:.5},data:[{yAxis:0}]},data:pair(liqS)},
       ...(fxS?[{name:'固定汇率口径',type:'line',showSymbol:false,smooth:true,lineStyle:{color:'#a78bfa',width:1.3,type:'dashed'},data:pair(fxS)}]:[]),
       ...(m1S?[{name:m1Name,type:'line',showSymbol:false,smooth:true,lineStyle:{color:col('--gold'),width:1.3,type:'dashed'},data:pair(m1S)}]:[]),
