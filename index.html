@@ -14,7 +14,6 @@
 <meta property="og:description" content="G3/G4央行流动性、美元净流动性、传导链与资产配置立场，每周自动更新。">
 <meta property="og:url" content="https://investment.brassivo.com/">
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "64c752e85a1e4cbabb66cc2c4bfb00f1"}'></script>
-<script>(function(){var m=document.cookie.match(/brassivo_theme=(dark|light)/);document.documentElement.setAttribute('data-theme',m?m[1]:'light');})();</script>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
 <script defer src="data.js"></script>
@@ -26,12 +25,8 @@
     --muted:#3e4552; --blue:#3a6fc4; --gold:#c9971f; --idx:#0e9aab; --cmd:#e67e22;
     --red:#e2554a; --green:#3a9b78; --warn:#e0913a;
   }
-  html[data-theme=dark]{
-    --bg:#171a21; --panel:#1f232c; --panel2:#1b1e26; --panel3:#272c37; --grid:#343a47; --txt:#edeff4;
-    --muted:#b6bec9; --blue:#5b8dd9; --gold:#e8c46a; --idx:#4dd0e1;
-  }
-  html:not([data-theme=dark]) .gaugebar .pin{background:#333;box-shadow:none}
-  html:not([data-theme=dark]) .gaugebar .pin.ghost{background:rgba(0,0,0,.3)}
+  .gaugebar .pin{background:#333;box-shadow:none}
+  .gaugebar .pin.ghost{background:rgba(0,0,0,.3)}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
   .wrap{max-width:1200px;margin:0 auto;padding:16px 24px 60px}
@@ -206,7 +201,6 @@
   <a href="https://brassivo.com" class="brand" style="color:var(--txt);text-decoration:none;padding:0">Brassivo <span style="color:var(--muted);font-weight:400">· Liquidity</span></a>
   <a href="#hero">结论</a><a href="#chain">逻辑链</a><a href="#alloc">配置</a><a href="#data">深入数据</a>
   <a href="https://stocks.brassivo.com" style="margin-left:auto">Global Stocks →</a><a href="https://china.brassivo.com">China Stocks →</a>
-  <button id="themeBtn" onclick="(function(){var d=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.cookie='brassivo_theme='+d+'; domain=.brassivo.com; path=/; max-age=31536000; SameSite=Lax';location.reload();})()" style="cursor:pointer;border:1px solid var(--grid);background:var(--panel);color:var(--muted);font-size:14px;padding:4px 10px;border-radius:6px;white-space:nowrap">深色/浅色</button>
 </nav>
 <div class="wrap">
 
