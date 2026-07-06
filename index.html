@@ -394,8 +394,10 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   const m1s=DATA.china_liq&&DATA.china_liq.m1_yoy;
   if(!m1s||!m1s.values||!m1s.values.length)return;
   const v=m1s.values, n=v.length;
-  const cur=v[n-1], prev=v[Math.max(0,n-4)];      // 约3个月前
-  const m1Up=cur>=prev;
+  const cur=v[n-1];
+  const ma=(end,k)=>{let s=0,c=0;for(let i=end;i>end-k&&i>=0;i--){s+=v[i];c++;}return c?s/c:null;};
+  const recent=ma(n-1,3), prior=ma(n-4,3);         // 近3月均值 vs 前3月均值(抗单月跳动)
+  const m1Up=(recent!=null&&prior!=null)?recent>=prior:cur>=v[Math.max(0,n-4)];
   const extLoose=tight<0.8;                         // 中性偏松=宽松，否则收紧
   const q=extLoose?(m1Up?0:1):(m1Up?2:3);
   const cells=[
@@ -418,7 +420,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
       <div class="cnq ${q===2?'on':''}"><b>${cells[2].k}</b><div class="d">${cells[2].d}</div></div>
       <div class="cnq ${q===3?'on':''}"><b>${cells[3].k}</b><div class="d">${cells[3].d}</div></div>
     </div>
-    <div class="cnnow">当前定位：国内M1同比 <b>${cur}%</b>（近3月${m1Up?'↑回升':'↓回落'}） × <b>${extLoose?'外部宽松':'外部收紧'}</b>（流动性档位「${regime}」）→ <b style="color:var(--warn)">${cells[q].k.replace(/^\S+\s/,'')}</b>。对策：${cells[q].d}。</div>
+    <div class="cnnow">当前定位：国内M1同比 <b>${cur}%</b>（3月均值趋势${m1Up?'↑回升':'↓回落'}） × <b>${extLoose?'外部宽松':'外部收紧'}</b>（流动性档位「${regime}」）→ <b style="color:var(--warn)">${cells[q].k.replace(/^\S+\s/,'')}</b>。对策：${cells[q].d}。</div>
   </div>`;
 })();
 
