@@ -41,6 +41,19 @@ window.SUMMARY = {
     ["美元/现金", "留子弹", "鹰派重定价后美元自低位回升；现金=退潮中错杀的凸性弹药"],
     ["比特币", "轻仓/谨慎", "独立4年周期（2025.10–2026.10出清段）"]
   ],
+  /* allocPlan: 三档目标比例模板（进攻/中性/防御），前端按当下周期自动选档显示。
+     档位判定规则（前端自动，无需手填）：
+       防御 = 源头紧度≥1.5，或 紧度≥0.8 且 ④温度计出现bear
+       进攻 = 紧度<0.8 且 ④温度计无bear
+       中性 = 其余情形
+     维护：模板是"周期档位→比例"的映射，属慢变量——只在框架观点变化时改模板本身，
+     每周不用动。资产名必须与 allocation 第一列一致。各档合计=100。±5%内自行微调视作执行弹性。 */
+  "allocPlan": {
+    "防御": {"美股/科技": 5, "A股": 20, "港股": 5, "黄金": 20, "白银": 5, "铜/铝": 5, "原油": 0, "美债": 10, "美元/现金": 27, "比特币": 3},
+    "中性": {"美股/科技": 15, "A股": 15, "港股": 8, "黄金": 15, "白银": 4, "铜/铝": 6, "原油": 2, "美债": 10, "美元/现金": 20, "比特币": 5},
+    "进攻": {"美股/科技": 25, "A股": 15, "港股": 10, "黄金": 10, "白银": 5, "铜/铝": 8, "原油": 4, "美债": 5, "美元/现金": 10, "比特币": 8}
+  },
+
   "add": "净流动性回补 + G3同比拐头向上 + 央行重新扩表/重启购债 + SOFR利差正常 + 点阵转鸽",
   "reduce": "净流动性持续抽水 + 准备金快速下降 + SOFR−IORB飙升 + 10Y破850线上行 + 美股宽度收窄 + 油价逆转上行",
   "risks": [
@@ -276,9 +289,17 @@ window.SUMMARY = {
   .alloc table{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}
   .alloc td{padding:8px 8px;border-bottom:1px solid var(--grid);line-height:1.6;word-break:break-word;overflow-wrap:anywhere;vertical-align:middle}
   .alloc tr:last-child td{border-bottom:none}
-  .alloc td:first-child{width:17%;font-weight:600}
-  .alloc td:nth-child(2){width:19%}
+  .alloc td:first-child{width:15%;font-weight:600}
+  .alloc td:nth-child(2){width:17%}
+  .alloc td:nth-child(3){width:15%}
   .alloc td:last-child{color:var(--muted)}
+  .wcell{white-space:nowrap}
+  .wcell b{font-size:15px;font-variant-numeric:tabular-nums;display:inline-block;width:38px}
+  .wbar{display:inline-block;vertical-align:middle;width:calc(100% - 44px);max-width:90px;height:8px;background:var(--panel2);border-radius:4px;overflow:hidden}
+  .wbar i{display:block;height:100%;border-radius:4px}
+  .gearbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;font-size:14px}
+  .gearbar .why{color:var(--muted);font-size:13px}
+  .gearbar .preview{color:var(--warn);font-size:13px;display:none}
   .pill{display:inline-block;padding:3px 12px;border-radius:16px;font-size:14px;font-weight:600;border:1px solid;white-space:nowrap}
   .pill.g{color:#46c583;border-color:#2f7d55;background:rgba(70,197,131,.08)}
   .pill.y{color:#e2b24a;border-color:#8a7326;background:rgba(226,178,74,.08)}
@@ -381,8 +402,14 @@ window.SUMMARY = {
   </div>
 
   <!-- 三、配置 -->
-  <h2 id="alloc">资产配置 <span class="no">按信号排序：进攻(绿) → 中性(黄) → 防御(红)</span></h2>
+  <h2 id="alloc">资产配置 <span class="no">按信号排序：进攻(绿) → 中性(黄) → 防御(红) · 比例=当下周期档位的目标模板</span></h2>
   <div class="alloc">
+    <div class="gearbar">
+      <span class="lbl">周期档位</span>
+      <div class="seg" id="gearseg"><button data-g="进攻">进攻</button><button data-g="中性">中性</button><button data-g="防御">防御</button></div>
+      <span class="why" id="gearwhy"></span>
+      <span class="preview" id="gearpv">⚠ 预览其他档位，非当前判定</span>
+    </div>
     <table><tbody id="alloctb"></tbody></table>
     <div class="trig">
       <div><b style="color:var(--green)">什么时候加风险</b><br><span id="addsig"></span></div>
@@ -655,11 +682,40 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
 (function(){
   const _po={g:0,y:1,r:2};
   const rows=S.allocation.slice().sort((a,b)=>_po[pillClass(a[1])]-_po[pillClass(b[1])]);
-  document.getElementById('alloctb').innerHTML=rows.map(r=>{
-    const p=P&&P.allocation&&P.allocation[r[0]];
-    const bd=!P?'':(p===undefined?B.add:(p!==r[1]?B.mod:''));
-    return `<tr><td>${esc(r[0])}${bd}</td><td><span class="pill ${pillClass(r[1])}">${esc(r[1])}</span></td><td>${esc(r[2])}</td></tr>`;
-  }).join('');
+  /* 周期档位自动判定：防御=紧度≥1.5 或(紧度≥0.8且④温度计有bear)；进攻=紧度<0.8且④无bear；其余中性 */
+  const PLAN=S.allocPlan||null;
+  const t4bear=inds.filter(r=>/^④温度计/.test(r.k)&&r.sig==='bear').length;
+  const autoGear=tight>=1.5?'防御':(tight>=0.8&&t4bear>0?'防御':(tight<0.8&&t4bear===0?'进攻':'中性'));
+  const GCOLOR={'进攻':col('--green'),'中性':col('--warn'),'防御':col('--red')};
+  const wmax=PLAN?Math.max(...Object.values(PLAN[autoGear]).map(Number),...Object.values(PLAN['进攻']).map(Number)):1;
+  function draw(gear){
+    const plan=PLAN&&PLAN[gear];
+    document.getElementById('alloctb').innerHTML=rows.map(r=>{
+      const p=P&&P.allocation&&P.allocation[r[0]];
+      const bd=!P?'':(p===undefined?B.add:(p!==r[1]?B.mod:''));
+      let wc='';
+      if(plan){
+        const w=plan[r[0]];
+        wc=w===undefined?'<td class="wcell">—</td>':
+          `<td class="wcell"><b>${w}%</b><span class="wbar"><i style="width:${Math.min(100,w/wmax*100)}%;background:${GCOLOR[gear]}"></i></span></td>`;
+      }
+      return `<tr><td>${esc(r[0])}${bd}</td><td><span class="pill ${pillClass(r[1])}">${esc(r[1])}</span></td>${wc}<td>${esc(r[2])}</td></tr>`;
+    }).join('');
+    if(plan){
+      const sum=rows.reduce((s,r)=>s+(plan[r[0]]||0),0);
+      document.getElementById('alloctb').innerHTML+=`<tr><td style="color:var(--muted)">合计</td><td></td><td class="wcell"><b style="color:${sum===100?'var(--muted)':'var(--red)'}">${sum}%</b></td><td>目标模板，±5%内为执行弹性；档位由源头紧度+温度计自动判定</td></tr>`;
+    }
+    document.querySelectorAll('#gearseg button').forEach(b=>b.classList.toggle('on',b.dataset.g===gear));
+    document.getElementById('gearpv').style.display=gear===autoGear?'none':'inline';
+  }
+  if(PLAN){
+    document.getElementById('gearwhy').textContent=`自动判定：${autoGear}（源头紧度${tight.toFixed(2)}${t4bear>0?' · ④温度计'+t4bear+'项bear':''}）`;
+    document.querySelectorAll('#gearseg button').forEach(b=>b.onclick=()=>draw(b.dataset.g));
+    draw(autoGear);
+  }else{
+    document.querySelector('.gearbar').style.display='none';
+    draw(null);
+  }
   document.getElementById('addsig').textContent=S.add;
   document.getElementById('redsig').textContent=S.reduce;
   document.getElementById('risks').innerHTML=S.risks.map(x=>'<div>• '+esc(x)+'</div>').join('')+'<div>• '+esc(S.disclaimer)+'</div>';
