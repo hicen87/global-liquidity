@@ -1,7 +1,7 @@
 # Brassivo Research 项目维护文档（接手须先读）
 
 > 本文件是整个 Brassivo 投研站群的**唯一权威维护说明**。两个连接文件夹的根目录各存一份**完全相同的副本**，改动其一后请同步另一份。
-> 最后更新：2026-07-06（含当日 UI/逻辑大改：机械化潜力分、中国资产双因子定位、图表 M1 叠加、全站宽度/字号统一等）
+> 最后更新：2026-07-12（新增 4b 节：Liquidity 数据管道已知坑——arm64 沙盒 akshare/py_mini_racer 失效的沪深300备用取数方案、akshare 拆分安装法）
 
 ---
 
@@ -71,6 +71,26 @@ git push origin main
 4. **浏览器缓存**：`data.js` 等静态文件会被缓存，验证线上是否更新用 `curl -s https://<域名>/data.js -H 'Cache-Control: no-cache'` 或无痕窗口；用户看到"没变"通常是缓存，让其 Cmd+Shift+R。
 
 ---
+
+## 4b. Liquidity 数据管道已知坑（2026-07-12 实战记录）
+
+周更沙盒环境不稳定，以下问题都实际发生过，按此处理、不要现场重新摸索：
+
+1. **akshare 45 秒内装不完**：整包 `pip install akshare` 必超时。拆分安装：先 `pip install akshare --no-deps --break-system-packages`，再补依赖 `py_mini_racer tqdm xlrd openpyxl jsonpath beautifulsoup4 html5lib`。pip 超时被杀不影响已装部分，反复"装→`python3 -c "import akshare"` 检查"循环即可。其余依赖（scipy/yfinance/pandas_datareader）也建议逐个装、逐个验。
+2. **arm64 沙盒上沪深300（sse）拉取失败**：`build_resume.py` 的 sse 走 akshare `stock_zh_index_daily(sh000300)`，依赖 py_mini_racer 原生库——该库无 aarch64 版本，报 "Native library not available"。同时东财接口（`index_zh_a_hist`，host `push2.eastmoney.com`）被沙盒代理封锁，也不可用。
+   **备用方案（已验证）**：用腾讯月K接口直接取数并预写缓存，然后正常跑 build_resume.py（命中缓存即跳过）：
+   ```python
+   import requests, pickle, pandas as pd
+   r = requests.get("https://web.ifzq.gtimg.cn/appstock/app/fqkline/get",
+                    params={"param": "sh000300,month,2004-01-01,<今天>,320,qfq"}, timeout=20)
+   d = r.json()['data']['sh000300']; rows = d.get('qfqmonth') or d.get('month')
+   # 行格式 [日期, 开, 收, 高, 低, 量]，取 x[2] 收盘
+   sr = pd.Series([float(x[2]) for x in rows], index=pd.to_datetime([x[0] for x in rows])).resample('ME').last()
+   pickle.dump({'sr': sr, 'unit_override': None}, open('/tmp/gl_cache/asset_sse.pkl','wb'))
+   ```
+   缓存格式必须是 `{'sr': 月末重采样Series, 'unit_override': None}`，文件名 `asset_sse.pkl`。写入后**务必用 yfinance `000300.SS` 交叉验证最近收盘价一致**（2026-07-12 验证过 7/10 收盘 4780.79 两源一致），禁止跳过验证直接发布。
+3. **内联 standalone 时的 script 标签**：`index.html` 里本地脚本带 `defer`——`<script defer src="data.js"></script>`，替换匹配串要含 `defer`，否则替换不中、standalone 会残留外链旧数据。
+4. **隔日复核先例**（07-04→07-05、07-11→07-12）：若上次更新在 1-2 天内，定量通常无变化，定性只做边际修正；照常走完整流程（prev 转存、history append、updated 改当日），history note 写明"隔日/周末复核"。
 
 ## 5. 选股表 data.js 字段规范（Global 与 China 必须一致）
 
