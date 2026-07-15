@@ -214,7 +214,7 @@
 </head>
 <body>
 <nav>
-  <a href="https://brassivo.com" class="brand"><img src="/favicon.svg" alt="Brassivo">BRASSIVO <span style="color:var(--warm);font-weight:700">RESEARCH</span></a>
+  <a href="https://brassivo.com" class="brand"><img src="favicon.svg" alt="Brassivo">BRASSIVO <span style="color:var(--warm);font-weight:700">RESEARCH</span></a>
   <a href="#hero">结论</a><a href="#chain">逻辑链</a><a href="#alloc">配置</a><a href="#data">深入数据</a>
   <a href="https://investment.brassivo.com" class="cur" style="margin-left:auto">宏观流动性</a><a href="https://stocks.brassivo.com/sectors.html">美股板块</a><a href="https://stocks.brassivo.com">美股个股</a><a href="https://china.brassivo.com/sectors.html">中国板块</a><a href="https://china.brassivo.com">中国个股</a>
 </nav>
@@ -446,12 +446,13 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
 (function(){
   const evs=S&&S.events;
   if(!evs||!evs.length)return;
-  const today=new Date().toISOString().slice(0,10);
+  const shParts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+  const today=`${shParts.year}-${shParts.month}-${shParts.day}`;
   const wd=['日','一','二','三','四','五','六'];
   const cls={'源头':'src','定价':'prc','观察':'obs'};
   /* 只显示未过期超过2天的事件 */
   const show=evs.filter(e=>e.d>=addDays(today,-2)).sort((a,b)=>a.d<b.d?-1:1);
-  function addDays(ds,n){const d=new Date(ds);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+  function addDays(ds,n){const d=new Date(ds+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
   if(!show.length)return;
   document.getElementById('evblk').style.display='';
   document.getElementById('evrow').innerHTML=show.map(e=>{
@@ -719,7 +720,7 @@ window.addEventListener('resize',()=>{if(chart)chart.resize();if(wchart)wchart.r
 <script>
 (function(){
   var KEY='brassivo_sub', API='https://api.brassivo.com/subscribe';
-  function subbed(){return document.cookie.indexOf('brassivo_sub=1')>-1||document.cookie.indexOf('brassivo_pro=1')>-1;}
+  function subbed(){return /^(localhost|127\.0\.0\.1|::1)$/.test(location.hostname)||document.cookie.indexOf('brassivo_sub=1')>-1||document.cookie.indexOf('brassivo_pro=1')>-1;}
   function setsub(){document.cookie='brassivo_sub=1; domain=.brassivo.com; path=/; max-age=2592000; SameSite=Lax';}
   if(subbed()) return;
   function init(){
