@@ -335,7 +335,7 @@ const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t
 
 /* ---------- 指标链数据（含AUTO填充+规则打分覆盖，与旧版口径一致） ---------- */
 const RS=W&&W.signals, SD=W&&W.sig_detail;
-const ruleKey=k=>/ON RRP/.test(k)?'rrp':/TGA/.test(k)?'tga':/SOFR/.test(k)?'spread':/资产负债表/.test(k)?'bs':null;
+const ruleKey=k=>/ON RRP/.test(k)?'rrp':/TGA/.test(k)?'tga':/SOFR/.test(k)?'spread':/资产负债表/.test(k)?'bs':/政府债/.test(k)?'gov':null;
 const P=S&&S.prev;
 const B={up:'<span class="chg up">▲</span>',down:'<span class="chg down">▼</span>',mod:'<span class="chg mod">变</span>',add:'<span class="chg add">新</span>'};
 const inds=(S?S.indicators:[]).map(r=>{
@@ -347,6 +347,7 @@ const inds=(S?S.indicators:[]).map(r=>{
   if(v==='AUTO'&&L){
     if(/TGA/.test(k)) v=`$${L.tga}T（13周${SD?pm(SD.tga13)+'T':''}·自动）`;
     else if(/SOFR/.test(k)) v=`${pm(L.spread)}bp（自动）`;
+    else if(/政府债/.test(k)) v=(L.gov4w!=null)?`近4周发行${Math.round(L.gov4w)}亿·为前13周基线的${L.gov_ratio}×（自动）`:'—';
     else v='—';
   }
   if(ruled&&/资产负债表/.test(k)&&SD) v+=`（13周${pm(SD.bs13)}%）`;

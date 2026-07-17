@@ -75,6 +75,41 @@ signals = {
 }
 sig_detail = {'tga13': round(_tga13, 3), 'bs13': round(_bs13, 2)}
 
+# ===== 中国锚·前瞻子行: 政府债发行 (国债+地方债, 巨潮资讯 via akshare) =====
+# 口径: 周频(W-FRI)实际发行总量合计(亿元), 4周滚动。无到期量数据→是"总发行"非"净发行"。
+# 逻辑: 政府债放量→财政支出→企业活期存款回升, 前瞻M1约1-2个月("中国锚"子行, 不参与紧度)。
+# 信号阈值: 近4周滚动 / (前13周周均×4): >1.3=放量bull; <0.7=缩量bear; 其间warn。
+# 拉取失败时优雅降级: 不写gov字段、信号缺省, 前端回退到 summary.js 人工值, 严禁编数。
+gov = None
+try:
+    import akshare as ak
+    _end = dt.date.today()
+    _start = _end - dt.timedelta(days=300)
+    _tr = ak.bond_treasure_issue_cninfo(start_date=_start.strftime('%Y%m%d'), end_date=_end.strftime('%Y%m%d'))
+    _lg = ak.bond_local_government_issue_cninfo(start_date=_start.strftime('%Y%m%d'), end_date=_end.strftime('%Y%m%d'))
+    def _agg(df):
+        d = df.drop_duplicates(subset=['债券名称', '发行起始日', '实际发行总量'])  # 同债多市场去重
+        return pd.Series(d['实际发行总量'].values, index=pd.to_datetime(d['发行起始日']))
+    _s = pd.concat([_agg(_tr), _agg(_lg)]).sort_index()
+    _wk = _s.resample('W-FRI').sum()
+    _wk = _wk[_wk.index <= pd.Timestamp(_end) + pd.Timedelta(days=6)]  # 截断未来周桶(已公告未发行)
+    _wk = _wk[_wk.index.map(lambda x: (x - pd.Timedelta(days=6)).date() <= _end)]
+    _r4 = _wk.rolling(4).sum()
+    _base = (_wk.rolling(13).mean().shift(4) * 4)
+    _ratio = float(_r4.iloc[-1] / _base.iloc[-1]) if _base.iloc[-1] and not pd.isna(_base.iloc[-1]) else None
+    gov = {
+        'gov4w': round(float(_r4.iloc[-1]), 0),
+        'gov_ratio': round(_ratio, 2) if _ratio else None,
+        'gov_week': _wk.index[-1].strftime('%Y-%m-%d'),
+        'series': ser(_r4.dropna(), 0),
+    }
+    if _ratio is not None:
+        signals['gov'] = 'bull' if _ratio > 1.3 else ('bear' if _ratio < 0.7 else 'warn')
+        sig_detail['gov_ratio'] = round(_ratio, 2)
+    print(f"政府债发行 近4周 {gov['gov4w']:.0f}亿 (基线倍数 {gov['gov_ratio']}) @ {gov['gov_week']} 信号={signals.get('gov')}")
+except Exception as e:
+    print(f'政府债发行拉取失败(降级跳过, 前端回退人工值): {str(e)[:120]}')
+
 data = {
     'updated': dt.datetime.now().strftime('%Y-%m-%d %H:%M'),
     'latest': {
@@ -93,6 +128,11 @@ data = {
     'spread': ser(spread, 1),
     'signals': signals, 'sig_detail': sig_detail,
 }
+if gov:
+    data['latest']['gov4w'] = gov['gov4w']
+    data['latest']['gov_ratio'] = gov['gov_ratio']
+    data['latest']['gov_week'] = gov['gov_week']
+    data['gov_issue'] = gov['series']
 
 with open(OUT, 'w', encoding='utf-8') as f:
     f.write('window.WEEKLY = ' + json.dumps(data, ensure_ascii=False) + ';')
