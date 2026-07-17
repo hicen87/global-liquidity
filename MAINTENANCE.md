@@ -185,7 +185,7 @@ git push origin main
 
 **中国锚前瞻子行·政府债发行（2026-07-17 起）：** `build_weekly.py` 末段经 akshare 拉巨潮（`bond_treasure_issue_cninfo` + `bond_local_government_issue_cninfo`），按（债券名称,发行起始日,实际发行总量）去重（同债多市场重复记录），W-FRI 周频聚合并截断未来周桶，算**近4周滚动发行 vs 前13周周均×4** 的倍数：>1.3×=bull（财政脉冲放量，领先M1约1-2个月）、<0.7×=bear、其间warn。写入 `data_weekly.js` 的 `latest.gov4w/gov_ratio/gov_week`、`gov_issue` 序列与 `signals.gov`。前端 `ruleKey` 以 `/政府债/` 匹配自动覆盖信号、AUTO读数自动填充；行名带「中国锚·」前缀故**不参与紧度计算**。口径注意：巨潮无到期量数据，这是**总发行非净发行**。拉取失败时脚本降级跳过（不写gov字段），前端回退 summary.js 人工值——严禁编数。曾评估的"票据转贴现利率"因无可用数据源（akshare无接口、票交所无公开API且sandbox不可达）未实现。**待办（需人工，一次性）：** `.github/workflows/update_weekly.yml` 第22行需把 `pip install pandas pandas_datareader` 改为 `pip install pandas pandas_datareader akshare`，否则周六 Actions 自动跑时政府债行降级跳过（仅本地周更任务会刷新它）。当前 PAT 无 `workflow` scope 推不了该文件——在 GitHub 网页端直接编辑该行，或给 PAT 补 workflow 权限后本地推。
 
-**M1下月预测点（2026-07-17 起）：** `summary.js` 的 `m1Forecast` 字段（默认null）。M1无路透/彭博一致预期——只能在每月5-10日券商"金融数据前瞻"研报出来后，周更时 WebSearch 核实中值填入 `{month,value,src,confirm}`；查不到留null、前端不画。禁止填LLM估计值。前端在月度图M1黄虚线末端画点状延伸+空心预测点（仅选中沪深300/恒生时可见，因G4口径已移除）。
+**M1下月前瞻（2026-07-17 起）：** `summary.js` 的 `m1Forecast` 字段（默认null）。两种模式：①点位 `{month,value,src,confirm}` →绿色虚线段与实际线相连（来源=券商"金融数据前瞻"中值，每月5-10日才出）；②仅方向 `{month,dir:"down|up|flat",src,confirm}` →M1线末端绿色箭头（来源=机构方向判断，须可核实引述）。周更时 WebSearch 核实，有点位优先点位；查不到留null不画。禁止填LLM自估的数或方向。仅选中沪深300/恒生时可见（G4口径已移除）。
 
 **G4+中国口径已移除（2026-07-17）：** 月度图 scope 切换只剩 G3；`build_resume.py` 仍计算 G4 序列写入 data.json（`gl_yoy/gl_total`），前端不再展示——如需恢复，把 index.html `#scope` 里的 g4 按钮加回即可。摘要 oneliner 里仍可引用 G4 数字作叙述。
 

@@ -667,13 +667,24 @@ function renderChart(){
        markLine:{symbol:'none',silent:true,lineStyle:{color:col('--muted'),opacity:.5},data:[{yAxis:0}]},data:pair(liqS)},
       ...(fxS?[{name:'固定汇率口径',type:'line',showSymbol:false,smooth:true,lineStyle:{color:'#a78bfa',width:1.3,type:'dashed'},data:pair(fxS)}]:[]),
       ...(m1S?[{name:m1Name,type:'line',showSymbol:false,smooth:true,lineStyle:{color:col('--gold'),width:1.3,type:'dashed'},data:pair(m1S)}]:[]),
-      /* M1下月预测段(机构前瞻·人工核实, S.m1Forecast=null时不画)：与实际线相连，预测段用绿色区分 */
-      ...(m1S&&S&&S.m1Forecast&&S.m1Forecast.value!=null?[{
-        name:'M1预测·'+(S.m1Forecast.confirm?'机构前瞻':'待定'),type:'line',
-        lineStyle:{color:col('--green'),width:1.4,type:'dashed'},
-        symbol:'emptyCircle',symbolSize:7,itemStyle:{color:col('--panel'),borderColor:col('--green'),borderWidth:1.6},
-        data:[[m1S.dates[m1S.dates.length-1],m1S.values[m1S.values.length-1]],[S.m1Forecast.month+'-28',S.m1Forecast.value]]
-      }]:[]),
+      /* M1下月前瞻(机构·人工核实, S.m1Forecast=null时不画)：
+         有点位(value)→绿色虚线段与实际线相连; 只有方向(dir:up/down/flat)→末端绿色箭头 */
+      ...(m1S&&S&&S.m1Forecast&&(S.m1Forecast.value!=null||S.m1Forecast.dir)?[(function(){
+        const F=S.m1Forecast, last=[m1S.dates[m1S.dates.length-1],m1S.values[m1S.values.length-1]];
+        const nm='M1下月前瞻·'+(F.confirm?'机构':'待定');
+        if(F.value!=null) return {name:nm,type:'line',
+          lineStyle:{color:col('--green'),width:1.4,type:'dashed'},
+          symbol:'emptyCircle',symbolSize:7,itemStyle:{color:col('--panel'),borderColor:col('--green'),borderWidth:1.6},
+          data:[last,[F.month+'-28',F.value]]};
+        return {name:nm,type:'scatter',
+          symbol:'arrow',symbolSize:15,symbolRotate:F.dir==='down'?180:F.dir==='flat'?-90:0,
+          symbolOffset:[24,F.dir==='down'?9:F.dir==='up'?-9:0],
+          itemStyle:{color:col('--green')},z:5,
+          label:{show:true,position:'right',distance:20,color:col('--green'),fontSize:11,
+                 formatter:parseInt(F.month.slice(5),10)+'月方向·'+(F.confirm?'机构前瞻':'待定')},
+          tooltip:{formatter:nm+'：'+(F.dir==='down'?'回落':F.dir==='up'?'回升':'走平')+'（'+(F.src||'')+'）'},
+          data:[last]};
+      })()]:[]),
       {name:a.name+' 价格',type:'line',yAxisIndex:1,showSymbol:false,lineStyle:{color:mCol,width:1.4},data:pair(a)}
     ]
   },true);
