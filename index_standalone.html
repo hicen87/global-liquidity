@@ -859,7 +859,7 @@ window.addEventListener('resize',()=>{if(chart)chart.resize();if(wchart)wchart.r
 <script>
 (function(){
   var KEY='brassivo_sub', API='https://api.brassivo.com/subscribe';
-  function subbed(){return /^(localhost|127\.0\.0\.1|::1)$/.test(location.hostname)||document.cookie.indexOf('brassivo_sub=1')>-1||document.cookie.indexOf('brassivo_pro=1')>-1;}
+  function subbed(){return location.protocol==='file:'||/^(localhost|127\.0\.0\.1|::1)$/.test(location.hostname)||document.cookie.indexOf('brassivo_sub=1')>-1||document.cookie.indexOf('brassivo_pro=1')>-1;}
   function setsub(){document.cookie='brassivo_sub=1; domain=.brassivo.com; path=/; max-age=2592000; SameSite=Lax';}
   if(subbed()) return;
   function init(){
