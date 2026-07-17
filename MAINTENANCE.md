@@ -183,7 +183,7 @@ git push origin main
 
 **中国资产双因子定位（客户端自动算，`#cnbox`）：** M1方向用 `china_liq.m1_yoy` 的**3月均线 vs 前3月均线**判「回升/回落」（抗单月跳动）；外部松紧取 `tight<0.8` 为宽松。两轴交叉定 2×2 象限（戴维斯双击/东边日出西边雨/内需独立行情/戴维斯双杀）。自动随数据刷新，无需人工维护。
 
-**中国锚前瞻子行·政府债发行（2026-07-17 起）：** `build_weekly.py` 末段经 akshare 拉巨潮（`bond_treasure_issue_cninfo` + `bond_local_government_issue_cninfo`），按（债券名称,发行起始日,实际发行总量）去重（同债多市场重复记录），W-FRI 周频聚合并截断未来周桶，算**近4周滚动发行 vs 前13周周均×4** 的倍数：>1.3×=bull（财政脉冲放量，领先M1约1-2个月）、<0.7×=bear、其间warn。写入 `data_weekly.js` 的 `latest.gov4w/gov_ratio/gov_week`、`gov_issue` 序列与 `signals.gov`。前端 `ruleKey` 以 `/政府债/` 匹配自动覆盖信号、AUTO读数自动填充；行名带「中国锚·」前缀故**不参与紧度计算**。口径注意：巨潮无到期量数据，这是**总发行非净发行**。拉取失败时脚本降级跳过（不写gov字段），前端回退 summary.js 人工值——严禁编数。曾评估的"票据转贴现利率"因无可用数据源（akshare无接口、票交所无公开API且sandbox不可达）未实现。
+**中国锚前瞻子行·政府债发行（2026-07-17 起）：** `build_weekly.py` 末段经 akshare 拉巨潮（`bond_treasure_issue_cninfo` + `bond_local_government_issue_cninfo`），按（债券名称,发行起始日,实际发行总量）去重（同债多市场重复记录），W-FRI 周频聚合并截断未来周桶，算**近4周滚动发行 vs 前13周周均×4** 的倍数：>1.3×=bull（财政脉冲放量，领先M1约1-2个月）、<0.7×=bear、其间warn。写入 `data_weekly.js` 的 `latest.gov4w/gov_ratio/gov_week`、`gov_issue` 序列与 `signals.gov`。前端 `ruleKey` 以 `/政府债/` 匹配自动覆盖信号、AUTO读数自动填充；行名带「中国锚·」前缀故**不参与紧度计算**。口径注意：巨潮无到期量数据，这是**总发行非净发行**。拉取失败时脚本降级跳过（不写gov字段），前端回退 summary.js 人工值——严禁编数。曾评估的"票据转贴现利率"因无可用数据源（akshare无接口、票交所无公开API且sandbox不可达）未实现。**待办（需人工，一次性）：** `.github/workflows/update_weekly.yml` 第22行需把 `pip install pandas pandas_datareader` 改为 `pip install pandas pandas_datareader akshare`，否则周六 Actions 自动跑时政府债行降级跳过（仅本地周更任务会刷新它）。当前 PAT 无 `workflow` scope 推不了该文件——在 GitHub 网页端直接编辑该行，或给 PAT 补 workflow 权限后本地推。
 
 **月度图表（renderChart）：** 所有流动性指标用**虚线**（流动性同比=蓝、固定汇率=紫、中国M1=黄），只有**标的资产价格是实线**。中国M1（黄虚线）仅在 `scope==='g4'` 或选中沪深300/恒生（`CN_ASSETS=['sse','hsi']`）时叠加。tooltip 背景用 `col('--panel')` 跟随主题（浅白/深灰）。
 
