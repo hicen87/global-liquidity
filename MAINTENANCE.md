@@ -1,7 +1,7 @@
 # Brassivo Research 项目维护文档（接手须先读）
 
 > 本文件是整个 Brassivo 投研站群的**唯一权威维护说明**。两个连接文件夹的根目录各存一份**完全相同的副本**，改动其一后请同步另一份。
-> 最后更新：2026-07-19（再次合并分叉：Liquidity 侧 7-17 新增的「政府债前瞻子行」「M1下月前瞻」「G4口径移除」三段此前只在 Global_Liquidity 副本里，现两份齐全；同步修正 6b 月度图表段的 g4 旧描述；补记付费墙 file:// 豁免）
+> 最后更新：2026-07-19（再次合并分叉：Liquidity 侧 7-17 新增的「政府债前瞻子行」「M1下月前瞻」「G4口径移除」三段此前只在 Global_Liquidity 副本里，现两份齐全；同步修正 6b 月度图表段的 g4 旧描述；补记付费墙 file:// 豁免、主页深色模式已移除、配置表三档模板；新增 6c Liquidity 目录文件清单；复核 6b 政府债 workflow 待办**仍未完成**）
 
 ---
 
@@ -156,7 +156,7 @@ git push origin main
 
 ## 6. 全站通用约定（4 个 index.html 共享）
 
-- **主题**：cookie `brassivo_theme=light|dark`（域 `.brassivo.com` 全站共享），默认浅灰；每页有「深色/浅色」按钮。CSS 用 `html[data-theme=dark]` 覆盖变量。
+- **主题**：cookie `brassivo_theme=light|dark`（域 `.brassivo.com` 共享），默认浅灰；CSS 用 `html[data-theme=dark]` 覆盖变量。**主页已于 2026-07-06 移除深色模式**（brassivo-home/index.html 已无 data-theme），主题按钮仅存在于三个子看板。
 - **语言**：cookie `brassivo_lang=zh|en`，**目前仅主页做了中英切换，默认中文**；三个子看板暂未做 i18n（用户 2026-07-06 决定保持现状）。
 - **配色变量**：浅色 `--bg:#f6f7f9` 系；深色 `--bg:#171a21` 系。文字对比度已调（浅色 `--txt:#15181e`、深色 `--txt:#edeff4`）。
 - **页面宽度**：四站统一 `max-width:1200px`（2026-07-06 起，含主页与 Liquidity）。
@@ -176,7 +176,7 @@ git push origin main
 2. 关键数字卡：G3同比 / 美元净流动性 / **中国锚 M1 同比（月度）**
 3. 为什么（机制）：流动性传导链 ①源头→④温度计（`商品轮动时钟`、`五层周期`均默认折叠）
 4. 未来催化：未来流动性事件日历（**已移到传导链之后**，作为前瞻）
-5. 怎么配：资产配置表 + 加/减风险触发 + **中国资产双因子定位**（默认折叠）
+5. 怎么配：资产配置表（含**三档比例模板**，按周期档位自动切换，2026-07-12 起）+ 加/减风险触发 + **中国资产双因子定位**（默认折叠）
 6. 深入自查：自洽校验 + 周频净流动性图 + 月度流动性vs资产叠加图（含 M1）+ 敏感度排序（折叠）
 
 **核心自洽链（单一真值驱动，勿破坏）：** ①源头指标链信号 → 紧度均值 `tight` → 档位 `regime`（中性偏松/边际收紧/收紧）。由它同向派生：立场 stance、紧度仪表指针、双因子卡的"外部松紧"轴。改任一处措辞时确保方向一致。
@@ -190,6 +190,17 @@ git push origin main
 **G4+中国口径已移除（2026-07-17）：** 月度图 scope 切换只剩 G3；`build_resume.py` 仍计算 G4 序列写入 data.json（`gl_yoy/gl_total`），前端不再展示——如需恢复，把 index.html `#scope` 里的 g4 按钮加回即可。摘要 oneliner 里仍可引用 G4 数字作叙述。
 
 **月度图表（renderChart）：** 所有流动性指标用**虚线**（流动性同比=蓝、固定汇率=紫、中国M1=黄），只有**标的资产价格是实线**。中国M1（黄虚线）仅在选中沪深300/恒生（`CN_ASSETS=['sse','hsi']`）时叠加（G4口径已于 2026-07-17 移除，见上）。tooltip 背景用 `col('--panel')` 跟随主题（浅白/深灰）。
+
+---
+
+## 6c. Liquidity 目录文件清单（哪些动、哪些别动）
+
+- **核心**：`index.html`(结构+样式) / `data.js`+`data.json`(月度定量，build_resume.py 产出) / `data_weekly.js`(周频，build_weekly.py 产出) / `summary.js`(LLM 定性摘要+事件日历+m1Forecast)。
+- `index_standalone.html`：**单文件离线分发版**（data/summary 全内联，供本地/邮件分发预览）。周更或改版后需重新内联生成，替换脚本标签时注意 `defer` 的坑（见 4b.3）；部署细节见 `DEPLOY.md`。
+- `backtest/`：宏观配置层月度回测（backtest.py + report.md + equity.png，2004-02 起，数据读 data.js）。改配置规则后可重跑验证，不参与线上部署。
+- `build_data.py`/`build_fast.py`：早期全量构建脚本，已被 `build_resume.py`（断点续跑+缓存）取代，留作参考。
+- **历史遗留勿动勿引用**：`v1.html`/`v2.html`/`global_liquidity.py`/`global_liquidity.png`/`78a2*.png`。
+- `HANDOFF.md`/`HANDOFF_MAC.md`：早期交接文档，**已被本 MAINTENANCE.md 取代**，仅作历史参考，有冲突以本文件为准。
 
 ---
 
