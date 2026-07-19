@@ -1,7 +1,7 @@
 # Brassivo Research 项目维护文档（接手须先读）
 
 > 本文件是整个 Brassivo 投研站群的**唯一权威维护说明**。两个连接文件夹的根目录各存一份**完全相同的副本**，改动其一后请同步另一份。
-> 最后更新：2026-07-14（合并两份分叉副本：4b「Liquidity 数据管道坑」与 5b「EPS 修正序列」此前各只存在于一份中，现两份齐全；另新增 4c 选股看板周更已知坑 2 条）
+> 最后更新：2026-07-19（再次合并分叉：Liquidity 侧 7-17 新增的「政府债前瞻子行」「M1下月前瞻」「G4口径移除」三段此前只在 Global_Liquidity 副本里，现两份齐全；同步修正 6b 月度图表段的 g4 旧描述；补记付费墙 file:// 豁免）
 
 ---
 
@@ -165,7 +165,7 @@ git push origin main
 - **favicon**：各仓库根目录 `favicon.svg`（B字标 + 上升折线）。
 - **背景**：仅**主页**有极淡静态点阵网格 + Hero 光晕呼吸（纯 CSS，`body::before/::after`）；子看板不加，保持工作区干净。
 - **选股表手机端**：≤640px 时表格转**卡片式**（字段竖排「标签:值」，`data-label` 属性驱动），桌面端仍是宽表格；表头 sticky 置顶（`th{position:sticky;top:45px}`）。
-- **订阅墙**：三个子看板底部有邮箱订阅墙（`brassivo_sub` cookie，30天试用）；`brassivo_pro` cookie 为付费会员解锁。
+- **订阅墙**：三个子看板底部有邮箱订阅墙（`brassivo_sub` cookie，30天试用）；`brassivo_pro` cookie 为付费会员解锁。Liquidity 页付费墙已豁免 `file://` 协议（2026-07-17）——本地直接打开 index.html / index_standalone.html 预览不弹墙，线上不受影响。
 
 ---
 
@@ -189,7 +189,7 @@ git push origin main
 
 **G4+中国口径已移除（2026-07-17）：** 月度图 scope 切换只剩 G3；`build_resume.py` 仍计算 G4 序列写入 data.json（`gl_yoy/gl_total`），前端不再展示——如需恢复，把 index.html `#scope` 里的 g4 按钮加回即可。摘要 oneliner 里仍可引用 G4 数字作叙述。
 
-**月度图表（renderChart）：** 所有流动性指标用**虚线**（流动性同比=蓝、固定汇率=紫、中国M1=黄），只有**标的资产价格是实线**。中国M1（黄虚线）仅在 `scope==='g4'` 或选中沪深300/恒生（`CN_ASSETS=['sse','hsi']`）时叠加。tooltip 背景用 `col('--panel')` 跟随主题（浅白/深灰）。
+**月度图表（renderChart）：** 所有流动性指标用**虚线**（流动性同比=蓝、固定汇率=紫、中国M1=黄），只有**标的资产价格是实线**。中国M1（黄虚线）仅在选中沪深300/恒生（`CN_ASSETS=['sse','hsi']`）时叠加（G4口径已于 2026-07-17 移除，见上）。tooltip 背景用 `col('--panel')` 跟随主题（浅白/深灰）。
 
 ---
 
