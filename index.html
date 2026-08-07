@@ -268,7 +268,7 @@
   </div>
 
   <!-- 三、配置 -->
-  <h2 id="alloc">资产配置 <span class="no">按信号排序：进攻(绿) → 中性(黄) → 防御(红) · 比例=当下周期档位的目标模板</span></h2>
+  <h2 id="alloc">资产配置 <span class="no">三资产组合：股票 + 短期国债 + 黄金 · 比例=当下周期档位目标</span></h2>
   <div class="alloc">
     <div class="gearbar">
       <span class="lbl">周期档位</span>
@@ -548,8 +548,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
 
 /* ---------- 三、配置 ---------- */
 (function(){
-  const _po={g:0,y:1,r:2};
-  const rows=S.allocation.slice().sort((a,b)=>_po[pillClass(a[1])]-_po[pillClass(b[1])]);
+  const rows=S.allocation.slice();
   /* 周期档位自动判定：防御=紧度≥1.5 或(紧度≥0.8且④温度计有bear)；进攻=紧度<0.8且④无bear；其余中性 */
   const PLAN=S.allocPlan||null;
   const t4bear=inds.filter(r=>/^④温度计/.test(r.k)&&r.sig==='bear').length;
@@ -592,13 +591,15 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
 /* ---------- 四、深入数据 ---------- */
 /* 校验条 */
 (function(){
-  const wv={r:1,y:0,g:-1}, riskOn=/科技|半导体|比特币|纳指|成长/, defen=/现金|黄金|白银|价值|A股|红利|美债|美元/;
-  let d=0;
-  (S.allocation||[]).forEach(r=>{const v=wv[pillClass(r[1])]??0;if(riskOn.test(r[0]))d+=v;else if(defen.test(r[0]))d-=v;});
-  const dLab=d>=3?'防御':d>=1?'偏防御':d<=-3?'进攻':d<=-1?'偏进攻':'中性';
+  const t4bearCheck=inds.filter(r=>/^④温度计/.test(r.k)&&r.sig==='bear').length;
+  const gearCheck=tight>=1.5?'防御':(tight>=0.8&&t4bearCheck>0?'防御':(tight<0.8&&t4bearCheck===0?'进攻':'中性'));
+  const planCheck=S.allocPlan&&S.allocPlan[gearCheck];
+  const stockW=planCheck&&Number(planCheck['股票']);
+  const dLab=stockW>=65?'进攻':stockW<=40?'防御':'中性';
   const issues=[];
-  if(tight>=0.8&&d<1)issues.push(`流动性${regime}，但配置防御度偏低(${d})`);
-  if(tight<0.8&&d>3)issues.push(`流动性中性偏松，但配置过度防御(${d})`);
+  if(gearCheck==='防御'&&stockW>40)issues.push(`防御档股票权重${stockW}%过高`);
+  if(gearCheck==='中性'&&(stockW<45||stockW>60))issues.push(`中性档股票权重${stockW}%偏离45–60%区间`);
+  if(gearCheck==='进攻'&&stockW<65)issues.push(`进攻档股票权重${stockW}%不足65%`);
   const c13=window.__w13pct;
   if(typeof c13==='number'){
     if(c13<=-2&&tight<0.8)issues.push(`净流动性13周${c13.toFixed(1)}%（客观收紧），但主观档位偏松`);
@@ -611,7 +612,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   }
   document.getElementById('checkbar').innerHTML=`<div class="cbar">
     <span>档位 <b style="color:${rc}">${regime}</b> <span style="color:var(--muted)">紧度${tight.toFixed(2)}/2</span></span>
-    <span>配置基调 <b>${dLab}</b> <span style="color:var(--muted)">防御度${d}</span></span>
+    <span>配置基调 <b>${dLab}</b> <span style="color:var(--muted)">股票${Number.isFinite(stockW)?stockW+'%':'—'}</span></span>
     <span>净流动性13周 <b style="color:${(c13??0)>=0?col('--green'):col('--red')}">${typeof c13==='number'?fmt(c13)+'%':'—'}</b></span>
     ${hist}
     <span style="margin-left:auto" class="${ok?'ok':'bad'}">${ok?'✓ 各模块自洽':'⚠ '+issues.length+' 项待核'}</span>
