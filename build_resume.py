@@ -229,19 +229,21 @@ for key, yfc, name, group, unit, sge, lag in ASSETS:
         'dates':[d.strftime('%Y-%m-%d') for d in sr.index],'values':[round(float(v),4) for v in sr.values]}
 
 def compute_lead_lag(gl_series, lags=range(-6,19)):
+    """选择绝对相关性最强的 lag，同时保留正负方向。"""
     out=[]; base=gl_series.dropna()
     for key in [k for k,*_ in ASSETS if k in assets]:
         a=assets[key]; a_yoy=asset_analysis[key].pct_change(YOY)*100
-        best_l,best_c,c0=0,-2.0,None
+        best_l,best_c,c0=0,None,None
         for L in lags:
             df=pd.concat([base,a_yoy.shift(-L)],axis=1,sort=True).dropna()
             if len(df)<36: continue
             c=df.iloc[:,0].corr(df.iloc[:,1])
             if L==0: c0=c
-            if c>best_c: best_l,best_c=L,c
+            if best_c is None or abs(c)>abs(best_c): best_l,best_c=L,c
+        if best_c is None: continue
         out.append({'key':key,'name':a['name'].replace('(领先4月)',''),'group':a['group'],
             'best_lag':int(best_l),'best_corr':round(float(best_c),2),'corr0':round(float(c0),2) if c0 is not None else None})
-    out.sort(key=lambda x:x['best_corr'],reverse=True); return out
+    out.sort(key=lambda x:abs(x['best_corr']),reverse=True); return out
 lead_lag = compute_lead_lag(gl3_yoy)
 
 # 每个资产对"自身锚定流动性"的最佳领先月数(仅取非负: 流动性领先), 供前端"流动性前移"开关用

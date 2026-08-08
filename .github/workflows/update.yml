@@ -8,9 +8,14 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: global-liquidity-data
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -23,13 +28,48 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 生成 data.json
-        run: python build_data.py
+      - name: 断点续跑生成 data.json / data.js
+        shell: bash
+        run: |
+          completed=0
+          for attempt in $(seq 1 20); do
+            set +e
+            python build_resume.py 2>&1 | tee /tmp/build_resume.log
+            status=${PIPESTATUS[0]}
+            set -e
+            if grep -q 'WROTE .*data.json' /tmp/build_resume.log && grep -q 'DONE_OK' /tmp/build_resume.log; then
+              completed=1
+              break
+            fi
+            if [ "$status" -ne 2 ]; then
+              exit "$status"
+            fi
+          done
+          if [ "$completed" -ne 1 ]; then
+            echo 'build_resume.py 未在20次内完成' >&2
+            exit 1
+          fi
+      - name: 校验同源并重建 standalone
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('data.json').read_text(encoding='utf-8'))
+          js = Path('data.js').read_text(encoding='utf-8')
+          js_data = json.loads(js.split('=', 1)[1].rstrip().rstrip(';'))
+          if data != js_data:
+              raise SystemExit('data.js 与 data.json 不同源')
+          if len(data.get('assets', {})) != 13:
+              raise SystemExit('资产数量不是13，拒绝提交')
+          PY
+          python build_standalone.py
 
       - name: 提交回写
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json data.js
+          git add -- data.json data.js index_standalone.html
+          git diff --cached --check
           git diff --staged --quiet || git commit -m "chore: 自动更新流动性数据 $(date -u +%Y-%m-%d)"
           git push

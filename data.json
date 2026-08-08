@@ -1,5 +1,5 @@
 {
- "updated": "2026-08-08 10:56",
+ "updated": "2026-08-08 12:09",
  "latest": {
   "total": 24.94,
   "yoy": -1.68,
@@ -10900,12 +10900,76 @@
  ],
  "lead_lag": [
   {
+   "key": "sx600",
+   "name": "欧洲STOXX600",
+   "group": "指数",
+   "best_lag": -1,
+   "best_corr": -0.51,
+   "corr0": -0.49
+  },
+  {
+   "key": "nikkei",
+   "name": "日经225",
+   "group": "指数",
+   "best_lag": -1,
+   "best_corr": -0.43,
+   "corr0": -0.42
+  },
+  {
    "key": "wti",
    "name": "WTI原油",
    "group": "大宗",
    "best_lag": 10,
    "best_corr": 0.38,
    "corr0": -0.01
+  },
+  {
+   "key": "gold",
+   "name": "黄金",
+   "group": "贵金属",
+   "best_lag": 14,
+   "best_corr": -0.35,
+   "corr0": -0.03
+  },
+  {
+   "key": "spx",
+   "name": "标普500",
+   "group": "指数",
+   "best_lag": -1,
+   "best_corr": -0.33,
+   "corr0": -0.31
+  },
+  {
+   "key": "silver",
+   "name": "白银",
+   "group": "贵金属",
+   "best_lag": 15,
+   "best_corr": -0.26,
+   "corr0": -0.04
+  },
+  {
+   "key": "hsi",
+   "name": "恒生指数",
+   "group": "指数",
+   "best_lag": -1,
+   "best_corr": -0.26,
+   "corr0": -0.24
+  },
+  {
+   "key": "kospi",
+   "name": "韩国综指",
+   "group": "指数",
+   "best_lag": 18,
+   "best_corr": -0.25,
+   "corr0": -0.12
+  },
+  {
+   "key": "twii",
+   "name": "台湾加权",
+   "group": "指数",
+   "best_lag": -1,
+   "best_corr": -0.25,
+   "corr0": -0.23
   },
   {
    "key": "bcom",
@@ -10924,84 +10988,20 @@
    "corr0": -0.13
   },
   {
-   "key": "sx600",
-   "name": "欧洲STOXX600",
+   "key": "ndx",
+   "name": "纳斯达克",
    "group": "指数",
-   "best_lag": 14,
-   "best_corr": 0.17,
-   "corr0": -0.49
-  },
-  {
-   "key": "gold",
-   "name": "黄金",
-   "group": "贵金属",
-   "best_lag": -6,
-   "best_corr": 0.11,
-   "corr0": -0.03
-  },
-  {
-   "key": "silver",
-   "name": "白银",
-   "group": "贵金属",
-   "best_lag": -6,
-   "best_corr": 0.07,
-   "corr0": -0.04
+   "best_lag": 18,
+   "best_corr": -0.18,
+   "corr0": -0.1
   },
   {
    "key": "sse",
    "name": "沪深300",
    "group": "指数",
-   "best_lag": -6,
-   "best_corr": 0.07,
+   "best_lag": 18,
+   "best_corr": -0.18,
    "corr0": -0.11
-  },
-  {
-   "key": "twii",
-   "name": "台湾加权",
-   "group": "指数",
-   "best_lag": 11,
-   "best_corr": 0.06,
-   "corr0": -0.23
-  },
-  {
-   "key": "spx",
-   "name": "标普500",
-   "group": "指数",
-   "best_lag": 11,
-   "best_corr": 0.05,
-   "corr0": -0.31
-  },
-  {
-   "key": "ndx",
-   "name": "纳斯达克",
-   "group": "指数",
-   "best_lag": 8,
-   "best_corr": 0.05,
-   "corr0": -0.1
-  },
-  {
-   "key": "hsi",
-   "name": "恒生指数",
-   "group": "指数",
-   "best_lag": 11,
-   "best_corr": 0.01,
-   "corr0": -0.24
-  },
-  {
-   "key": "kospi",
-   "name": "韩国综指",
-   "group": "指数",
-   "best_lag": 8,
-   "best_corr": 0.01,
-   "corr0": -0.12
-  },
-  {
-   "key": "nikkei",
-   "name": "日经225",
-   "group": "指数",
-   "best_lag": 12,
-   "best_corr": -0.05,
-   "corr0": -0.42
   }
  ],
  "troughs": [

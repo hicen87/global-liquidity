@@ -119,7 +119,7 @@
   .chain .sname{font-size:16.5px;font-weight:700;margin:3px 0}
   .chain .sig{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%}
-  .dot.bull{background:var(--green)}.dot.warn{background:var(--warn)}.dot.bear{background:var(--red)}
+  .dot.bull{background:var(--green)}.dot.warn{background:var(--warn)}.dot.bear{background:var(--red)}.dot.na{background:var(--muted)}
   .chaindetail{display:none;background:var(--panel);border:1px solid var(--blue);border-radius:10px;margin-top:10px;padding:6px 14px}
   .chaindetail.show{display:block}
   .chaindetail table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
@@ -257,7 +257,7 @@
     <div class="clocknote" id="clocknote"></div>
   </details>
 
-  <details class="blk"><summary>五层周期定位<span class="sub">长周期背景板，变化慢，每周只微调措辞</span></summary>
+  <details class="blk"><summary>七层周期定位<span class="sub">长周期背景板，变化慢，每周只微调措辞</span></summary>
     <div class="cyccards" id="cyccards"></div>
   </details>
 
@@ -309,13 +309,13 @@
     <div id="chart"></div>
   </div>
 
-  <details class="blk"><summary>资产对流动性的领先/滞后敏感度<span class="sub">扫描历史最优滞后的相关系数；|r|&lt;0.15 视为无稳定关系（置灰）</span></summary>
+  <details class="blk"><summary>资产对流动性的领先/滞后敏感度<span class="sub">扫描历史各 lag 中绝对相关性最高者；|r|&lt;0.15 视为无稳定关系（置灰）</span></summary>
     <div id="ranklist" style="margin-top:10px"></div>
   </details>
 
   <div class="foot">
     <b>怎么读这个页面：</b>第一屏是结论（立场+档位+本周变化）；传导链解释"为什么"；配置表是"怎么做"；深入数据供自查。
-    月度指标看趋势（领先市场约3-6个月），周频指标看当下水位；两者背离时，先查是不是美元汇率在动（对比蓝实线与紫虚线）。<br>
+    月度指标看中期趋势，周频指标看当下水位；不预设固定领先期，具体领先/滞后与正负方向以敏感度表为准，相关不等于因果。两者背离时，先查是不是美元汇率在动（对比蓝虚线与紫虚线）。<br>
     <b>数据源：</b>FRED（央行资产负债表/汇率）、AkShare（中国央行/沪深300）、Yahoo Finance（指数/大宗/金银历史）、LSEG（BCOM最新值）。<span id="upd"></span><br>
     框架推演，非投资建议。<a href="v1.html">旧版看板(归档)</a>
   </div>
@@ -360,10 +360,12 @@ const inds=(S?S.indicators:[]).map(r=>{
   let[k,v,sig,note]=r;
   const rawV=v;
   const rk=ruleKey(k); if(RS&&rk&&RS[rk])sig=RS[rk];
+  const govMissing=rk==='gov'&&(!L||L.gov4w==null||L.gov_ratio==null);
+  if(govMissing){sig='na';note='政府债发行数据源本期抓取失败，读数与信号留空，不沿用旧值';}
   const p=P&&P.indicators&&P.indicators[k];
   const ruled=RS&&rk&&RS[rk];
   const signalChanged=!!p&&sig!==p[0];
-  const valueChanged=!!p&&((rawV!=='AUTO'&&rawV!==p[1])||(ruled&&ruledValueChanged(rk)));
+  const valueChanged=!!p&&((rawV!=='AUTO'&&rawV!==p[1])||(ruled&&ruledValueChanged(rk))||(govMissing&&ruledValueChanged(rk)));
   const changed=!!P&&(p===undefined||signalChanged||valueChanged);
   let bd='';
   if(P&&p===undefined)bd=B.add;
@@ -371,10 +373,10 @@ const inds=(S?S.indicators:[]).map(r=>{
     const dv=(tw[sig]??1)-(tw[p[0]]??1);
     bd=dv>0?SB.tight:dv<0?SB.loose:B.mod;
   }else if(valueChanged)bd=B.mod;
-  if(v==='AUTO'&&L){
-    if(/TGA/.test(k)) v=`$${L.tga}T（13周${SD?pm(SD.tga13)+'T':''}·自动）`;
-    else if(/SOFR/.test(k)) v=`${pm(L.spread)}bp（自动）`;
-    else if(/政府债/.test(k)) v=(L.gov4w!=null)?`近4周发行${Math.round(L.gov4w)}亿·为前13周基线的${L.gov_ratio}×（自动）`:'—';
+  if(v==='AUTO'){
+    if(L&&/TGA/.test(k)) v=`$${L.tga}T（13周${SD?pm(SD.tga13)+'T':''}·自动）`;
+    else if(L&&/SOFR/.test(k)) v=`${pm(L.spread)}bp（自动）`;
+    else if(L&&/政府债/.test(k)&&!govMissing) v=`近4周发行${Math.round(L.gov4w)}亿·为前13周基线的${L.gov_ratio}×（自动）`;
     else v='—';
   }
   if(ruled&&/资产负债表/.test(k)&&SD) v+=`（13周${pm(SD.bs13)}%）`;
@@ -404,7 +406,7 @@ document.getElementById('gpin').style.left=Math.min(97,Math.max(2,tight/2*100))+
   else if(dv>0.05){gd.className='gdelta tightn';gd.textContent='▲ 较上期转紧 '+prev.toFixed(2)+'→'+tight.toFixed(2);}
   else{gd.className='gdelta flat';gd.textContent='→ 较上期持平 '+tight.toFixed(2);}
 })();
-document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①源头5项信号均值（数据规则+人工各半）';
+document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①源头5项等权信号（4项周频自动 + 1项政策人工）';
 /* 本周要点：拆 oneliner 前几句为bullets */
 (function(){
   const one=S?S.oneliner:'';
@@ -422,7 +424,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   const cn=DATA.china_liq&&DATA.china_liq.latest;
   const sgn=v=>v>=0?'pos':'neg';
   document.getElementById('keys').innerHTML=`
-    <div class="kcard"><div class="k">G3流动性 同比（月度·领先3-6月）</div>
+    <div class="kcard"><div class="k">G3流动性 同比（月度·中期趋势）</div>
       <div class="v ${sgn(Ld.yoy3)}">${fmt(Ld.yoy3)}%</div>
       <div class="s">截至 ${Ld.date3||Ld.date} · 固定汇率 <b class="${sgn(Ld.yoy3_fx)}">${fmt(Ld.yoy3_fx)}%</b> · 差值${fmt(Ld.yoy3-Ld.yoy3_fx)}%是汇率贡献</div></div>
     <div class="kcard"><div class="k">美元净流动性（周频·当下水位）</div>
@@ -512,7 +514,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
     const rows=inds.filter(r=>r.k.startsWith(st.pre));
     const cnt={bull:0,warn:0,bear:0};
     rows.forEach(r=>cnt[r.sig]!==undefined&&cnt[r.sig]++);
-    const worst=cnt.bear>0?'bear':cnt.warn>0?'warn':'bull';
+    const worst=cnt.bear>0?'bear':cnt.warn>0?'warn':cnt.bull>0?'bull':'na';
     const chgN=rows.filter(r=>r.changed).length;
     /* 环节方向角标：本期 vs prev 的信号均值（bear2/warn1/bull0） */
     let dirBd='';

@@ -79,7 +79,7 @@ sig_detail = {'tga13': round(_tga13, 3), 'bs13': round(_bs13, 2)}
 # 口径: 周频(W-FRI)实际发行总量合计(亿元), 4周滚动。无到期量数据→是"总发行"非"净发行"。
 # 逻辑: 政府债放量→财政支出→企业活期存款回升, 前瞻M1约1-2个月("中国锚"子行, 不参与紧度)。
 # 信号阈值: 近4周滚动 / (前13周周均×4): >1.3=放量bull; <0.7=缩量bear; 其间warn。
-# 拉取失败时优雅降级: 不写gov字段、信号缺省, 前端回退到 summary.js 人工值, 严禁编数。
+# 拉取失败时优雅降级: 不写gov字段、信号缺省, 前端明确留空, 严禁编数或沿用旧人工值。
 gov = None
 try:
     import akshare as ak
@@ -108,7 +108,7 @@ try:
         sig_detail['gov_ratio'] = round(_ratio, 2)
     print(f"政府债发行 近4周 {gov['gov4w']:.0f}亿 (基线倍数 {gov['gov_ratio']}) @ {gov['gov_week']} 信号={signals.get('gov')}")
 except Exception as e:
-    print(f'政府债发行拉取失败(降级跳过, 前端回退人工值): {str(e)[:120]}')
+    print(f'政府债发行拉取失败(降级留空): {str(e)[:120]}')
 
 data = {
     'updated': dt.datetime.now().strftime('%Y-%m-%d %H:%M'),
