@@ -248,7 +248,7 @@
   <!-- 二、逻辑链 -->
   <h2 id="chain">流动性传导链 <span class="no">点击任一环节看明细 · 信号：<span class="dot bull"></span>宽松 <span class="dot warn"></span>观察 <span class="dot bear"></span>收紧</span></h2>
   <div class="hint">水从哪来（①央行/财政）→ 流到哪里（②利率与通胀）→ 汇率确认（③美元/人民币）→ 资产温度（④哨兵资产）。①是因，④是果。<br>
-  环节名旁出现 <span class="chg down">▲紧</span>/<span class="chg up">▼松</span> = 该环节信号较上期转向（本期无=信号与上期相同）；<span class="chg mod">N项有变</span> = 仅读数/措辞更新、信号未变。</div>
+  环节名旁出现 <span class="chg down">▲紧</span>/<span class="chg up">▼松</span> = 该环节信号较上期转向；<span class="chg mod">N项有变</span> = 本环节有N个信号、读数或措辞变化，0项也会明确显示。</div>
   <div class="chain" id="chainrow"></div>
   <div class="chaindetail" id="chaindetail"><table><tbody></tbody></table></div>
 
@@ -298,11 +298,12 @@
   </div>
 
   <div class="panelblk">
-    <div style="font-size:15.5px;font-weight:600">全球流动性 vs 资产价格（月度）</div>
+    <div style="font-size:15.5px;font-weight:600">全球流动性 vs 资产价格（月度 + 本月暂值）</div>
     <div class="controls">
       <span class="lbl">口径</span>
       <div class="seg" id="scope"><button data-v="g3" class="on">G3 美欧日</button></div>
       <span class="lbl" id="fxhint">虚线=流动性指标（蓝=现汇 · 紫=固定汇率 · 黄=中国M1）· 实线=标的资产价格</span>
+      <span class="lbl" id="assetasof"></span>
     </div>
     <div class="controls" id="assetbar"></div>
     <div id="chart"></div>
@@ -315,7 +316,7 @@
   <div class="foot">
     <b>怎么读这个页面：</b>第一屏是结论（立场+档位+本周变化）；传导链解释"为什么"；配置表是"怎么做"；深入数据供自查。
     月度指标看趋势（领先市场约3-6个月），周频指标看当下水位；两者背离时，先查是不是美元汇率在动（对比蓝实线与紫虚线）。<br>
-    <b>数据源：</b>FRED（央行资产负债表/汇率）、AkShare（中国央行）、Yahoo Finance（指数/大宗/金银）。<span id="upd"></span><br>
+    <b>数据源：</b>FRED（央行资产负债表/汇率）、AkShare（中国央行/沪深300）、Yahoo Finance（指数/大宗/金银历史）、LSEG（BCOM最新值）。<span id="upd"></span><br>
     框架推演，非投资建议。<a href="v1.html">旧版看板(归档)</a>
   </div>
 </div>
@@ -337,13 +338,39 @@ const pillClass=t=>/减|空仓|清仓|出清|谨慎|轻仓|退出|回避/.test(t
 const RS=W&&W.signals, SD=W&&W.sig_detail;
 const ruleKey=k=>/ON RRP/.test(k)?'rrp':/TGA/.test(k)?'tga':/SOFR/.test(k)?'spread':/资产负债表/.test(k)?'bs':/政府债/.test(k)?'gov':null;
 const P=S&&S.prev;
-const B={up:'<span class="chg up">▲</span>',down:'<span class="chg down">▼</span>',mod:'<span class="chg mod">变</span>',add:'<span class="chg add">新</span>'};
+const PW=P&&P.weekly, PL=PW&&PW.latest, PSD=PW&&PW.sig_detail;
+const tw={bear:2,warn:1,bull:0};
+const B={
+  up:'<span class="chg up">▲</span>',down:'<span class="chg down">▼</span>',
+  mod:'<span class="chg mod" title="读数或措辞较上期更新">变</span>',
+  add:'<span class="chg add" title="较上期新增">新</span>'
+};
+const SB={tight:'<span class="chg down" title="信号较上期转紧">▲紧</span>',loose:'<span class="chg up" title="信号较上期转松">▼松</span>'};
+const neq=(a,b,eps=1e-9)=>a==null||b==null?a!==b:Math.abs(Number(a)-Number(b))>eps;
+const ruledValueChanged=rk=>{
+  if(!PW||!L||!PL)return false;
+  if(rk==='rrp')return neq(L.rrp,PL.rrp);
+  if(rk==='tga')return neq(L.tga,PL.tga)||neq(SD&&SD.tga13,PSD&&PSD.tga13);
+  if(rk==='spread')return neq(L.spread,PL.spread);
+  if(rk==='bs')return neq(L.walcl,PL.walcl)||neq(L.reserves,PL.reserves)||neq(SD&&SD.bs13,PSD&&PSD.bs13);
+  if(rk==='gov')return neq(L.gov4w,PL.gov4w)||neq(L.gov_ratio,PL.gov_ratio);
+  return false;
+};
 const inds=(S?S.indicators:[]).map(r=>{
   let[k,v,sig,note]=r;
+  const rawV=v;
   const rk=ruleKey(k); if(RS&&rk&&RS[rk])sig=RS[rk];
   const p=P&&P.indicators&&P.indicators[k];
   const ruled=RS&&rk&&RS[rk];
-  const bd=!P?'':(p===undefined?B.add:((ruled?v!==p[1]:(sig!==p[0]||v!==p[1]))?B.mod:''));
+  const signalChanged=!!p&&sig!==p[0];
+  const valueChanged=!!p&&((rawV!=='AUTO'&&rawV!==p[1])||(ruled&&ruledValueChanged(rk)));
+  const changed=!!P&&(p===undefined||signalChanged||valueChanged);
+  let bd='';
+  if(P&&p===undefined)bd=B.add;
+  else if(signalChanged){
+    const dv=(tw[sig]??1)-(tw[p[0]]??1);
+    bd=dv>0?SB.tight:dv<0?SB.loose:B.mod;
+  }else if(valueChanged)bd=B.mod;
   if(v==='AUTO'&&L){
     if(/TGA/.test(k)) v=`$${L.tga}T（13周${SD?pm(SD.tga13)+'T':''}·自动）`;
     else if(/SOFR/.test(k)) v=`${pm(L.spread)}bp（自动）`;
@@ -351,9 +378,8 @@ const inds=(S?S.indicators:[]).map(r=>{
     else v='—';
   }
   if(ruled&&/资产负债表/.test(k)&&SD) v+=`（13周${pm(SD.bs13)}%）`;
-  return {k,v,sig,note,bd};
+  return {k,v,sig,note,bd,changed};
 });
-const tw={bear:2,warn:1,bull:0};
 const SRC=inds.filter(r=>/^①源头/.test(r.k));
 const tight=SRC.length?SRC.reduce((s,r)=>s+(tw[r.sig]??1),0)/SRC.length:1;
 const regime=tight>=1.5?'收紧':tight>=0.8?'边际收紧':'中性偏松';
@@ -398,7 +424,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   document.getElementById('keys').innerHTML=`
     <div class="kcard"><div class="k">G3流动性 同比（月度·领先3-6月）</div>
       <div class="v ${sgn(Ld.yoy3)}">${fmt(Ld.yoy3)}%</div>
-      <div class="s">固定汇率口径 <b class="${sgn(Ld.yoy3_fx)}">${fmt(Ld.yoy3_fx)}%</b> · 差值${fmt(Ld.yoy3-Ld.yoy3_fx)}%是美元汇率贡献</div></div>
+      <div class="s">截至 ${Ld.date3||Ld.date} · 固定汇率 <b class="${sgn(Ld.yoy3_fx)}">${fmt(Ld.yoy3_fx)}%</b> · 差值${fmt(Ld.yoy3-Ld.yoy3_fx)}%是汇率贡献</div></div>
     <div class="kcard"><div class="k">美元净流动性（周频·当下水位）</div>
       <div class="v">${L?L.netliq:'—'} <span style="font-size:15.5px;color:var(--muted)">万亿$</span></div>
       <div class="s">周环比 <b class="${L&&L.wow>=0?'pos':'neg'}">${L?pm(L.wow):'—'}</b> · 13周 <b class="${(w13pct??0)>=0?'pos':'neg'}">${w13pct!=null?fmt(w13pct)+'%':'—'}</b></div></div>
@@ -487,7 +513,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
     const cnt={bull:0,warn:0,bear:0};
     rows.forEach(r=>cnt[r.sig]!==undefined&&cnt[r.sig]++);
     const worst=cnt.bear>0?'bear':cnt.warn>0?'warn':'bull';
-    const chgN=rows.filter(r=>r.bd).length;
+    const chgN=rows.filter(r=>r.changed).length;
     /* 环节方向角标：本期 vs prev 的信号均值（bear2/warn1/bull0） */
     let dirBd='';
     if(P&&P.indicators){
@@ -502,7 +528,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
     html+=`<div class="step" data-pre="${st.pre}">
       <div class="sn">${esc(st.pre)} · ${esc(st.desc)}</div>
       <div class="sname"><span class="dot ${worst}"></span> ${esc(st.name)}${dirBd}</div>
-      <div class="sig">${cnt.bear?`<span><span class="dot bear"></span>${cnt.bear}</span>`:''}${cnt.warn?`<span><span class="dot warn"></span>${cnt.warn}</span>`:''}${cnt.bull?`<span><span class="dot bull"></span>${cnt.bull}</span>`:''}<span>${rows.length}项${chgN?` · <b style="color:#bc8cff">${chgN}项有变</b>`:''}</span></div>
+      <div class="sig">${cnt.bear?`<span><span class="dot bear"></span>${cnt.bear}</span>`:''}${cnt.warn?`<span><span class="dot warn"></span>${cnt.warn}</span>`:''}${cnt.bull?`<span><span class="dot bull"></span>${cnt.bull}</span>`:''}<span>${rows.length}项 · <b style="color:${chgN?'#bc8cff':'var(--muted)'}">${chgN}项有变</b></span></div>
     </div>`;
     if(i<3)html+='<div class="arrow">→</div>';
   });
@@ -647,6 +673,8 @@ function pair(s){return s.dates.map((d,i)=>[d,s.values[i]]);}
 function z3y(){const dt=new Date();dt.setFullYear(dt.getFullYear()-3);return dt.toISOString().slice(0,10);}
 function renderChart(){
   const a=DATA.assets[metal], mCol=assetColor(a.group);
+  const assetLabel=a.benchmark||a.name, lastPair=[a.dates[a.dates.length-1],a.values[a.values.length-1]];
+  document.getElementById('assetasof').textContent=`${a.partial?'● 本月暂值':'月末值'} · 截至 ${a.asof||a.dates[a.dates.length-1]} · ${assetLabel}`;
   const liqS=scope==='g3'?DATA.gl3_yoy:DATA.gl_yoy;
   const liqName='流动性同比%（'+(scope==='g3'?'美欧日·现汇':'G4+中国')+'）';
   const fxS=(scope==='g3'&&DATA.gl3_yoy_fx)?DATA.gl3_yoy_fx:null;
@@ -686,7 +714,8 @@ function renderChart(){
           tooltip:{formatter:nm+'：'+(F.dir==='down'?'回落':F.dir==='up'?'回升':'走平')+'（'+(F.src||'')+'）'},
           data:[last]};
       })()]:[]),
-      {name:a.name+' 价格',type:'line',yAxisIndex:1,showSymbol:false,lineStyle:{color:mCol,width:1.4},data:pair(a)}
+      {name:a.name+' 价格',type:'line',yAxisIndex:1,showSymbol:false,lineStyle:{color:mCol,width:1.4},data:pair(a),
+       markPoint:a.partial?{symbol:'circle',symbolSize:9,label:{show:false},itemStyle:{color:mCol,borderColor:col('--panel'),borderWidth:2},data:[{coord:lastPair,value:lastPair[1]}]}:undefined}
     ]
   },true);
 }

@@ -2,8 +2,10 @@
 """可断点续传版数据引擎: 每个网络片段单独缓存到 CACHE/, 反复运行逐步完成,
 全部就绪后组装写出 data.json / data.js。逻辑与 build_data.py 完全一致。"""
 import os, json, time, pickle, datetime as dt, re
+from io import StringIO
 import numpy as np, pandas as pd
 import pandas_datareader.data as web
+import requests
 import yfinance as yf
 from scipy.signal import find_peaks
 
@@ -13,6 +15,9 @@ CYCLE_MONTHS = 42; ANCHOR_DATE = '2025-12-31'
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'data.json')
 CACHE = '/tmp/gl_cache'; os.makedirs(CACHE, exist_ok=True)
+TODAY = pd.Timestamp(dt.date.today())
+ASSET_CACHE_SCHEMA = 2
+ASSET_MAX_AGE_DAYS = 10
 
 ASSETS = [
     ('gold','GC=F','黄金','贵金属','USD/oz','Au99.99',0),
@@ -30,6 +35,14 @@ ASSETS = [
     ('bcom','^BCOM','彭博商品指数','大宗','点',None,0),
 ]
 CN_BENCH = {'sse','hsi'}
+BENCHMARKS = {
+    'gold': 'COMEX黄金连续期货（GC=F）',
+    'silver': 'COMEX白银连续期货（SI=F）',
+    'ndx': '纳斯达克综合指数（^IXIC）',
+    'wti': 'NYMEX WTI连续期货（CL=F）',
+    'copper': 'COMEX铜连续期货（HG=F）',
+    'bcom': 'Bloomberg Commodity Index（BCOM）',
+}
 
 def cput(name, obj):
     pickle.dump(obj, open(os.path.join(CACHE, name+'.pkl'),'wb'))
@@ -37,7 +50,16 @@ def cget(name):
     p = os.path.join(CACHE, name+'.pkl')
     return pickle.load(open(p,'rb')) if os.path.exists(p) else None
 def have(name):
-    return os.path.exists(os.path.join(CACHE, name+'.pkl'))
+    p = os.path.join(CACHE, name+'.pkl')
+    if not os.path.exists(p): return False
+    return dt.datetime.fromtimestamp(os.path.getmtime(p)).date() == dt.date.today()
+def have_asset(name):
+    if not have(name): return False
+    try:
+        c = cget(name)
+        return isinstance(c, dict) and c.get('schema') == ASSET_CACHE_SCHEMA and isinstance(c.get('raw'), pd.Series)
+    except Exception:
+        return False
 
 BUDGET = 38
 t0 = time.time()
@@ -74,19 +96,45 @@ def fetch_asset_ak(symbol, lag):
                    index=pd.to_datetime(df['date'].values)).dropna()
     sr = sr[sr.index >= pd.Timestamp(START)]
     if len(sr) > 50:
-        sr = sr.resample('ME').last()
-        if lag: sr = sr.shift(-lag)
-        return sr, None
+        return sr, None, f'AkShare {symbol}'
     raise RuntimeError('empty')
 
 def fetch_asset(yfc, sge, lag):
     df = yf.download(yfc, start=START, progress=False, auto_adjust=True)
     sr = df['Close'].squeeze().dropna()
     if len(sr) > 50:
-        sr = sr.resample('ME').last()
-        if lag: sr = sr.shift(-lag)
-        return sr, None
+        return sr, None, f'Yahoo Finance {yfc}'
     raise RuntimeError('empty')
+
+def previous_asset_series(key):
+    if not os.path.exists(OUT): return pd.Series(dtype=float)
+    try:
+        old = json.load(open(OUT, encoding='utf-8'))['assets'][key]
+        return pd.Series(pd.to_numeric(old['values'], errors='coerce'),
+                         index=pd.to_datetime(old['dates'])).dropna()
+    except Exception:
+        return pd.Series(dtype=float)
+
+def fetch_bcom_lseg():
+    url = 'https://markets.investorschronicle.markitdigital.com/data/indices/tearsheet/historical?s=BCOM:IOM'
+    r = requests.get(url, headers={'User-Agent':'Mozilla/5.0'}, timeout=20)
+    r.raise_for_status()
+    tables = pd.read_html(StringIO(r.text), attrs={'class':'mod-tearsheet-historical-prices__results'})
+    if not tables: raise RuntimeError('LSEG BCOM table missing')
+    df = tables[0]
+    ds = df['Date'].astype(str).str.extract(r'([A-Za-z]+, [A-Za-z]+ \d{2}, \d{4})', expand=False)
+    sr = pd.Series(pd.to_numeric(df['Close'], errors='coerce').values,
+                   index=pd.to_datetime(ds, errors='coerce')).dropna().sort_index()
+    if sr.empty: raise RuntimeError('LSEG BCOM empty')
+    return sr
+
+def fetch_bcom(yfc, sge, lag):
+    base, _, _ = fetch_asset(yfc, sge, lag)
+    recent = fetch_bcom_lseg()
+    # Yahoo 的 ^BCOM 已停止在 2026-07-17；复用上次公开产物补历史，LSEG 覆盖最近真实交易日。
+    sr = pd.concat([base, previous_asset_series('bcom'), recent], sort=True).sort_index()
+    sr = sr[~sr.index.duplicated(keep='last')].dropna()
+    return sr, None, 'Yahoo Finance历史 + LSEG最新'
 
 # key -> akshare 指数代码（长历史，替代 Yahoo 短历史）
 AK_INDEX = {'sse': 'sh000300'}
@@ -94,20 +142,22 @@ AK_INDEX = {'sse': 'sh000300'}
 def get_sr(key, yfc, sge, lag):
     if key in AK_INDEX:
         return fetch_asset_ak(AK_INDEX[key], lag)
+    if key == 'bcom':
+        return fetch_bcom(yfc, sge, lag)
     return fetch_asset(yfc, sge, lag)
 
 for key, yfc, name, group, unit, sge, lag in ASSETS:
-    if have('asset_'+key):
+    if have_asset('asset_'+key):
         continue
     if out_of_time(): print('TIMEOUT before asset', key); raise SystemExit(2)
     try:
-        sr, uo = get_sr(key, yfc, sge, lag)
-        cput('asset_'+key, {'sr': sr, 'unit_override': uo}); print('asset', key, 'ok', len(sr))
+        sr, uo, source = get_sr(key, yfc, sge, lag)
+        cput('asset_'+key, {'schema':ASSET_CACHE_SCHEMA, 'raw':sr, 'unit_override':uo, 'source':source}); print('asset', key, 'ok', len(sr))
     except Exception as e:
         print('asset', key, 'retry', str(e)[:40])
         try:
-            time.sleep(2); sr, uo = get_sr(key, yfc, sge, lag)
-            cput('asset_'+key, {'sr': sr, 'unit_override': uo}); print('asset', key, 'ok2', len(sr))
+            time.sleep(2); sr, uo, source = get_sr(key, yfc, sge, lag)
+            cput('asset_'+key, {'schema':ASSET_CACHE_SCHEMA, 'raw':sr, 'unit_override':uo, 'source':source}); print('asset', key, 'ok2', len(sr))
         except Exception as e2:
             print('asset', key, 'FAIL', str(e2)[:40]); raise SystemExit(4)
 
@@ -139,30 +189,52 @@ cn_m1 = pd.to_numeric(_ms['货币(M1)-同比增长'], errors='coerce').dropna()
 cn_m2 = pd.to_numeric(_ms['货币和准货币(M2)-同比增长'], errors='coerce').dropna()
 cn_m1 = cn_m1[cn_m1.index>=pd.Timestamp(START)]; cn_m2 = cn_m2[cn_m2.index>=pd.Timestamp(START)]
 
-gl3 = pd.concat([fed_t,ecb_t,boj_t],axis=1).dropna().sum(axis=1); gl3_yoy = gl3.pct_change(YOY)*100
-gl = pd.concat([fed_t,ecb_t,boj_t,pboc_t],axis=1).dropna().sum(axis=1); gl_yoy = gl.pct_change(YOY)*100
+gl3 = pd.concat([fed_t,ecb_t,boj_t],axis=1,sort=True).dropna().sum(axis=1); gl3_yoy = gl3.pct_change(YOY)*100
+gl = pd.concat([fed_t,ecb_t,boj_t,pboc_t],axis=1,sort=True).dropna().sum(axis=1); gl_yoy = gl.pct_change(YOY)*100
 
 # 固定汇率口径: 全历史用最新汇率折算, 剔除汇率beta——现汇同比 − 固定汇率同比 = 汇率贡献
 _fx_eur = float(to_m(usd_eur).dropna().iloc[-1]); _fx_jpy = float(to_m(jpy_usd).dropna().iloc[-1])
 ecb_fx = to_m(ecb)*_fx_eur/1e6; boj_fx = to_m(boj)/(_fx_jpy*1e4)
-gl3_fx = pd.concat([fed_t,ecb_fx,boj_fx],axis=1).dropna().sum(axis=1); gl3_yoy_fx = gl3_fx.pct_change(YOY)*100
+gl3_fx = pd.concat([fed_t,ecb_fx,boj_fx],axis=1,sort=True).dropna().sum(axis=1); gl3_yoy_fx = gl3_fx.pct_change(YOY)*100
 
-assets = {}
+def asset_views(raw, lag):
+    sr = pd.Series(pd.to_numeric(raw.values, errors='coerce'), index=pd.to_datetime(raw.index)).dropna()
+    if getattr(sr.index, 'tz', None) is not None: sr.index = sr.index.tz_localize(None)
+    sr.index = sr.index.normalize()
+    sr = sr.sort_index(); sr = sr[~sr.index.duplicated(keep='last')]
+    current_period = TODAY.to_period('M')
+    complete_raw = sr[sr.index.to_period('M') < current_period]
+    analysis = complete_raw.resample('ME').last()
+    if lag: analysis = analysis.shift(-lag)
+    display = analysis.copy()
+    current = sr[sr.index.to_period('M') == current_period]
+    partial = not current.empty
+    asof = current.index[-1] if partial else sr.index[-1]
+    if partial: display.loc[asof] = current.iloc[-1]
+    return display.sort_index(), analysis.dropna(), asof, partial
+
+assets = {}; asset_analysis = {}
 for key, yfc, name, group, unit, sge, lag in ASSETS:
     c = cget('asset_'+key)
     if not c: continue
-    sr = c['sr'].dropna(); u = c['unit_override'] or unit
+    sr, analysis_sr, asof, partial = asset_views(c['raw'], lag)
+    age = int((TODAY - asof).days)
+    if age > ASSET_MAX_AGE_DAYS:
+        raise RuntimeError(f'asset {key} stale: {asof.date()} age={age}d')
+    u = c['unit_override'] or unit; asset_analysis[key] = analysis_sr
     assets[key] = {'name': name+(f'(领先{lag}月)' if lag else ''),'group':group,'unit':u,'lag':lag,
+        'ticker':yfc,'benchmark':BENCHMARKS.get(key, name),'source':c.get('source'),'asof':asof.strftime('%Y-%m-%d'),
+        'partial':partial,'analysis_end':analysis_sr.index[-1].strftime('%Y-%m-%d'),
         'liq':'china' if key in CN_BENCH else 'global',
         'dates':[d.strftime('%Y-%m-%d') for d in sr.index],'values':[round(float(v),4) for v in sr.values]}
 
 def compute_lead_lag(gl_series, lags=range(-6,19)):
     out=[]; base=gl_series.dropna()
     for key in [k for k,*_ in ASSETS if k in assets]:
-        a=assets[key]; sr=pd.Series(a['values'],index=pd.to_datetime(a['dates'])); a_yoy=sr.pct_change(YOY)*100
+        a=assets[key]; a_yoy=asset_analysis[key].pct_change(YOY)*100
         best_l,best_c,c0=0,-2.0,None
         for L in lags:
-            df=pd.concat([base,a_yoy.shift(-L)],axis=1).dropna()
+            df=pd.concat([base,a_yoy.shift(-L)],axis=1,sort=True).dropna()
             if len(df)<36: continue
             c=df.iloc[:,0].corr(df.iloc[:,1])
             if L==0: c0=c
@@ -173,18 +245,18 @@ def compute_lead_lag(gl_series, lags=range(-6,19)):
 lead_lag = compute_lead_lag(gl3_yoy)
 
 # 每个资产对"自身锚定流动性"的最佳领先月数(仅取非负: 流动性领先), 供前端"流动性前移"开关用
-def best_lead_vs(anchor, vals, dates, lags=range(0,19)):
-    a_yoy = pd.Series(vals, index=pd.to_datetime(dates)).pct_change(YOY)*100
+def best_lead_vs(anchor, sr, lags=range(0,19)):
+    a_yoy = sr.pct_change(YOY)*100
     base = anchor.dropna(); bc, bl = -9, 0
     for L in lags:
-        df = pd.concat([base, a_yoy.shift(-L)], axis=1).dropna()
+        df = pd.concat([base, a_yoy.shift(-L)], axis=1, sort=True).dropna()
         if len(df) < 36: continue
         c = df.iloc[:,0].corr(df.iloc[:,1])
         if c > bc: bc, bl = c, L
     return int(bl)
 for key in assets:
     anchor = cn_m1 if key in CN_BENCH else gl3_yoy
-    assets[key]['lead_m'] = best_lead_vs(anchor, assets[key]['values'], assets[key]['dates'])
+    assets[key]['lead_m'] = best_lead_vs(anchor, asset_analysis[key])
 
 s = gl3_yoy.dropna(); yv=s.values
 troughs_idx,_ = find_peaks(-yv, distance=TROUGH_DISTANCE, prominence=TROUGH_PROMINENCE)
@@ -224,7 +296,8 @@ data={'updated':dt.datetime.now().strftime('%Y-%m-%d %H:%M'),
     'latest':{'total':round(float(gl.iloc[-1]),2),'yoy':round(float(gl_yoy.dropna().iloc[-1]),2),
         'total3':round(float(gl3.iloc[-1]),2),'yoy3':round(float(gl3_yoy.dropna().iloc[-1]),2),
         'yoy3_fx':round(float(gl3_yoy_fx.dropna().iloc[-1]),2),
-        'date':gl.index[-1].strftime('%Y-%m-%d')},
+        'date':gl.index[-1].strftime('%Y-%m-%d'),'date3':gl3.index[-1].strftime('%Y-%m-%d'),
+        'date4':gl.index[-1].strftime('%Y-%m-%d')},
     'gl_yoy':ser(gl_yoy),'gl3_yoy':ser(gl3_yoy),'gl3_yoy_fx':ser(gl3_yoy_fx),'gl_total':ser(gl),'gl3_total':ser(gl3),
     'china_liq':{'m1_yoy':ser(cn_m1),'m2_yoy':ser(cn_m2),
         'latest':{'m1':round(float(cn_m1.iloc[-1]),1),'m2':round(float(cn_m2.iloc[-1]),1),'date':cn_m1.index[-1].strftime('%Y-%m-%d')}},
