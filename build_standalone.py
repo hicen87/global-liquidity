@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""从当前 index.html 精确内联三个本地数据脚本。"""
+"""从当前 index.html 精确内联四个本地数据脚本。"""
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
 INDEX = ROOT / "index.html"
 OUTPUT = ROOT / "index_standalone.html"
-SCRIPTS = ("data.js", "data_weekly.js", "summary.js")
+SCRIPTS = ("data.js", "data_weekly.js", "data_trade.js", "summary.js")
 
 
 def build() -> str:

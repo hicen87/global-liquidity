@@ -18,6 +18,7 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
 <script defer src="data.js"></script>
 <script defer src="data_weekly.js"></script>
+<script defer src="data_trade.js"></script>
 <script defer src="summary.js"></script>
 <style>
   :root{
@@ -173,6 +174,26 @@
   .trig{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:14px}
   .trig div{flex:1;min-width:280px;background:var(--panel2);border-radius:8px;padding:10px 12px;line-height:1.7}
   .risk{color:var(--muted);font-size:13.5px;line-height:1.8;margin-top:8px}
+  .tradebox{margin-top:14px;border-top:1px solid var(--grid);padding-top:13px}
+  .tradetitle{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:15.5px;font-weight:600}
+  .tradeobs{font-size:12px;color:var(--warn);border:1px solid var(--warn);border-radius:10px;padding:1px 7px;font-weight:600}
+  .tradenote{font-size:13px;color:var(--muted);line-height:1.6;margin:4px 0 9px}
+  .tradetable{border:1px solid var(--grid);border-radius:9px;overflow:hidden}
+  .tradehead,.traderow{display:grid;grid-template-columns:minmax(145px,1.05fr) 72px minmax(132px,.95fr) minmax(250px,2fr) 92px;align-items:center}
+  .tradehead{background:var(--panel2);color:var(--muted);font-size:12.5px;font-weight:600}
+  .tradehead>div,.traderow>div{padding:8px 10px;min-width:0}
+  .traderow{font-size:13.5px;border-top:1px solid var(--grid);line-height:1.5}
+  .traderow .asset{font-weight:600}
+  .traderow .proxy,.traderow .asof{display:block;color:var(--muted);font-size:11.5px;font-weight:400;margin-top:2px}
+  .tradeweight{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+  .tradestate{display:inline-block;border:1px solid;border-radius:12px;padding:2px 8px;font-size:12.5px;font-weight:600;white-space:nowrap}
+  .tradestate.up{color:var(--green);border-color:var(--green);background:rgba(58,155,120,.08)}
+  .tradestate.mixed{color:var(--warn);border-color:var(--warn);background:rgba(224,145,58,.08)}
+  .tradestate.down,.tradestate.stale{color:var(--red);border-color:var(--red);background:rgba(226,85,74,.08)}
+  .trademetrics{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+  .trademetric{font-size:11.5px;color:var(--muted);background:var(--panel2);border-radius:9px;padding:1px 6px;white-space:nowrap}
+  .tradeaction{color:var(--txt)}
+  .tradeverify{color:var(--muted);font-size:11.5px;margin-top:3px}
 
   /* ===== 第四层：数据 ===== */
   .cbar{background:var(--panel2);border:1px solid var(--grid);border-radius:8px;padding:10px 12px;font-size:14px;margin:10px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
@@ -201,6 +222,11 @@
     #chart{height:400px}
     .stancebig{font-size:21px}
     .row .tag{display:none}
+    .tradehead{display:none}
+    .traderow{display:block;padding:9px 10px}
+    .traderow>div{padding:3px 0}
+    .traderow>div::before{content:attr(data-label);display:inline-block;color:var(--muted);font-size:11.5px;width:68px;vertical-align:top}
+    .traderow .asset{display:inline-block}
   }
   body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0);background-size:26px 26px;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 42%,transparent 78%);mask-image:linear-gradient(180deg,#000 0%,#000 42%,transparent 78%)}
   body::after{content:"";position:fixed;top:-18vmax;left:50%;width:60vmax;height:60vmax;z-index:-1;pointer-events:none;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle, var(--glow) 0%, transparent 66%);opacity:.55;animation:bg-breathe 14s ease-in-out infinite}
@@ -281,6 +307,11 @@
       <div><b style="color:var(--green)">什么时候加风险</b><br><span id="addsig"></span></div>
       <div><b style="color:var(--red)">什么时候减风险</b><br><span id="redsig"></span></div>
     </div>
+    <div class="tradebox" id="tradebox">
+      <div class="tradetitle">交易确认层 <span class="tradeobs">20个交易日观察期</span></div>
+      <div class="tradenote">宏观档位决定目标比例；日线技术信号只决定执行节奏，不改变周期档位，也不计算真实买卖数量。</div>
+      <div class="tradetable" id="tradetable"></div>
+    </div>
     <details><summary style="cursor:pointer;color:var(--blue);font-size:14px;margin-top:8px">风险与反证 / 免责</summary><div class="risk" id="risks"></div></details>
   </div>
 
@@ -327,7 +358,7 @@ const col=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const fmt=v=>(v>=0?'+':'')+(+v).toFixed(2);
 const pm=v=>(v>=0?'+':'')+v;
-const DATA=window.DATA, S=window.SUMMARY, W=window.WEEKLY, L=W&&W.latest;
+const DATA=window.DATA, S=window.SUMMARY, W=window.WEEKLY, T=window.TRADE_SIGNALS, L=W&&W.latest;
 let scope='g3', metal='gold', chart=null, wchart=null;
 const GROUPS=['贵金属','大宗','指数'];
 const GCOL={'贵金属':col('--gold'),'大宗':col('--cmd'),'指数':col('--idx')};
@@ -574,6 +605,54 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   }).join('');
 })();
 
+/* 交易确认层：技术信号只控制执行节奏，不改宏观档位 */
+function renderTradeConfirmation(autoGear){
+  const box=document.getElementById('tradetable');
+  const plan=S.allocPlan&&S.allocPlan[autoGear];
+  if(!box||!plan)return;
+  const stateClass=s=>s==='up'?'up':s==='down'?'down':'mixed';
+  const stateLabel=s=>s==='up'?'趋势确认':s==='down'?'破位确认':'分歧待验证';
+  const daysOld=ds=>{
+    if(!ds)return Infinity;
+    const d=new Date(ds+'T00:00:00Z');
+    return Number.isNaN(d.getTime())?Infinity:Math.floor((Date.now()-d.getTime())/86400000);
+  };
+  const staleAfter=T&&Number(T.stale_after_calendar_days)||5;
+  const matrix=T&&T.rules&&T.rules.action_matrix;
+  const assetRow=(key,name,target)=>{
+    const a=T&&T.assets&&T.assets[key];
+    const stale=!a||!a.verified||daysOld(a.asof)>staleAfter;
+    const state=a&&a.state||'mixed';
+    const action=stale?'信号已过期，仅观察，不执行':
+      (matrix&&matrix[key]&&matrix[key][autoGear]&&matrix[key][autoGear][state])||'执行规则不可用';
+    const priceSide=a&&a.close>=a.sma200?'价>SMA200':'价<SMA200';
+    const slope=a?`200日线 ${a.sma200_slope_20d_pct>=0?'+':''}${a.sma200_slope_20d_pct}%/20日`:'—';
+    const rsi=a?(a.rsi14>55?`RSI ${a.rsi14} 偏强${a.rsi14>70?'·不追':''}`:a.rsi14<45?`RSI ${a.rsi14} 偏弱`:`RSI ${a.rsi14} 中性`):'—';
+    const bo=a?(a.breakout52w==='high'?'52周新高':a.breakout52w==='low'?'52周新低':'52周内震荡'):'—';
+    const agreement=a&&a.verification&&a.verification.proxy_trend_agreement;
+    const verify=a?(agreement?'主标的与代理同向':'主标的与代理分歧'):'无可用日线数据';
+    return `<div class="traderow">
+      <div data-label="资产"><span class="asset">${esc(name)}</span><span class="proxy">${a?esc(a.primary)+' · '+esc(a.confirm_proxy)+'确认':'—'}</span></div>
+      <div data-label="目标"><span class="tradeweight">${target}%</span></div>
+      <div data-label="技术"><span class="tradestate ${stale?'stale':stateClass(state)}">${stale?'已过期':stateLabel(state)}</span>
+        <div class="trademetrics"><span class="trademetric">${esc(priceSide)}</span><span class="trademetric">${esc(slope)}</span><span class="trademetric">${esc(rsi)}</span><span class="trademetric">${esc(bo)}</span></div></div>
+      <div data-label="执行"><div class="tradeaction">${esc(action)}</div><div class="tradeverify">${esc(verify)} · 不改变${autoGear}档目标</div></div>
+      <div data-label="数据"><span class="asof">${a?esc(a.asof):'—'}<br>${a?daysOld(a.asof)+'日历日前':'数据缺失'}</span></div>
+    </div>`;
+  };
+  const bondAction=matrix&&matrix.bond&&matrix.bond[autoGear]||'不做技术择时；由宏观档位决定比例';
+  box.innerHTML=`<div class="tradehead"><div>资产 / 代理</div><div>宏观目标</div><div>技术状态 / 四项指标</div><div>当前执行建议</div><div>数据日期</div></div>
+    ${assetRow('stock','股票（标普500代理）',plan['股票'])}
+    <div class="traderow">
+      <div data-label="资产"><span class="asset">短期国债</span><span class="proxy">现金替代 / 防御承接</span></div>
+      <div data-label="目标"><span class="tradeweight">${plan['短期国债']}%</span></div>
+      <div data-label="技术"><span class="tradestate mixed">不做技术择时</span></div>
+      <div data-label="执行"><div class="tradeaction">${esc(bondAction)}</div><div class="tradeverify">不套用200日线、RSI或52周突破</div></div>
+      <div data-label="数据"><span class="asof">宏观周更</span></div>
+    </div>
+    ${assetRow('gold','黄金',plan['黄金'])}`;
+}
+
 /* ---------- 三、配置 ---------- */
 (function(){
   const rows=S.allocation.slice();
@@ -613,6 +692,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
   }
   document.getElementById('addsig').textContent=S.add;
   document.getElementById('redsig').textContent=S.reduce;
+  renderTradeConfirmation(autoGear);
   document.getElementById('risks').innerHTML=S.risks.map(x=>'<div>• '+esc(x)+'</div>').join('')+'<div>• '+esc(S.disclaimer)+'</div>';
 })();
 

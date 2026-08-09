@@ -1,0 +1,70 @@
+name: 更新交易确认信号(日线)
+
+on:
+  schedule:
+    - cron: '30 21 * * 1-5'   # 美股收盘后；北京时间周二至周六 05:30
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: global-liquidity-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装最小依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas pandas_datareader yfinance
+
+      - name: 运行规则测试
+        run: python -m unittest discover -s tests -v
+
+      - name: 生成并校验日线信号
+        run: |
+          python build_trade_signals.py
+          python - <<'PY'
+          import datetime as dt
+          import json
+          import math
+          from pathlib import Path
+
+          text = Path('data_trade.js').read_text(encoding='utf-8')
+          data = json.loads(text.split('=', 1)[1].rstrip().rstrip(';'))
+          if data.get('schema') != 1 or data.get('cadence') != 'daily_close':
+              raise SystemExit('交易信号 schema/cadence 不正确')
+          if data.get('observation', {}).get('automated_orders') is not False:
+              raise SystemExit('观察期不得启用自动交易')
+          for key in ('stock', 'gold'):
+              asset = data.get('assets', {}).get(key, {})
+              required = ('asof', 'close', 'sma200', 'sma200_slope_20d_pct', 'rsi14', 'state')
+              missing = [name for name in required if asset.get(name) is None]
+              if missing or asset.get('state') not in {'up', 'mixed', 'down'} or not asset.get('verified'):
+                  raise SystemExit(f'{key}信号不完整或未核验: {missing}')
+              age = (dt.date.today() - dt.date.fromisoformat(asset['asof'])).days
+              if age > int(data.get('stale_after_calendar_days', 5)):
+                  raise SystemExit(f'{key}信号已过期{age}天，拒绝提交')
+              for name in ('close', 'sma200', 'sma200_slope_20d_pct', 'rsi14'):
+                  if not math.isfinite(float(asset[name])):
+                      raise SystemExit(f'{key}.{name}不是有限数')
+          PY
+          python build_standalone.py
+
+      - name: 提交回写
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- data_trade.js index_standalone.html
+          git diff --cached --check
+          git diff --staged --quiet || git commit -m "chore: 自动更新交易确认信号 $(date -u +%Y-%m-%d)"
+          git push
