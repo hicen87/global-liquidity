@@ -83,6 +83,45 @@ window.SUMMARY = {
     {"d": "2026-09-17", "name": "BOJ利率会议（17-18日）", "impact": "源头", "note": "日本央行官方日历确认；观察1.0%政策利率与加息异议是否变化", "confirm": true}
   ],
 
+  /* policyOverlay: 官员讲话、正式政策行动与市场确认的定性覆盖层。
+     只解释政策意图和潜在传导，不进入 indicators，不参与源头紧度、regime、档位或仓位计算。
+     每项必须有可追溯来源；confirmation 只描述市场是否确认，不能替代客观数据。 */
+  "policyOverlay": {
+    "updated": "2026-08-23",
+    "stance": "期限端边际宽松 × 政策利率仍偏紧 · 分歧待验证",
+    "rule": "本层只解释政策意图与市场确认，不计入源头紧度，不自动修改周期档位或目标权重。",
+    "items": [
+      {
+        "date": "2026-08-19",
+        "actor": "美国财政部 / 贝森特",
+        "kind": "正式行动",
+        "bias": "期限端边际宽松",
+        "tone": "loose",
+        "channel": "长债市场流动性 / 期限溢价",
+        "summary": "财政部把部分10—30年期流动性支持回购由每次20亿美元提高至至少40亿美元；回购由新发行融资替代，不等同于美联储QE，也不直接增加银行准备金。",
+        "confirmation": "市场尚未确认",
+        "evidence": "消息后长债收益率一度回落但随后反弹；继续观察实际回购结果、10Y/30Y收益率、期限溢价与TGA结算路径。",
+        "source": "https://home.treasury.gov/news/press-releases/sb0584",
+        "sourceLabel": "美国财政部：回购机制",
+        "marketSource": "https://apnews.com/article/rates-bond-market-bessent-inflation-c6e148f8235a98245adf04b2d4bdd8d1",
+        "marketSourceLabel": "AP：8月19日行动与市场反应"
+      },
+      {
+        "date": "2026-08-19",
+        "actor": "美联储",
+        "kind": "官方纪要",
+        "bias": "政策利率仍偏紧",
+        "tone": "tight",
+        "channel": "短端利率预期 / 金融条件",
+        "summary": "7月会议纪要显示多数与会者支持维持利率，但数名与会者主张加息25个基点，多人认为通胀若未持续回落，政策仍可能需要进一步收紧。",
+        "confirmation": "待9月会议确认",
+        "evidence": "与财政部压低长端期限溢价的方向形成分歧，因此当前不能把政策组合解读为全面流动性宽松。",
+        "source": "https://www.federalreserve.gov/monetarypolicy/fomcminutes20260729.htm",
+        "sourceLabel": "Federal Reserve：7月会议纪要"
+      }
+    ]
+  },
+
   /* ===== 周期框架层（每周更新）=====
      cycles: 七层周期定位卡。pct=阶段进度0-100，措辞随周更新。
      clockStage: 商品轮动时钟 0金银 1有色 2原油 3尾声。
@@ -266,6 +305,27 @@ window.SUMMARY = {
   .evtag.obs{color:var(--muted);border-color:var(--grid)}
   .evtag.tbd{color:var(--muted);border-color:var(--grid);border-style:dashed}
 
+  /* ===== 政策预期覆盖层（定性展示，不参与紧度计算） ===== */
+  .policyhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .policytitle{font-size:15.5px;font-weight:600}
+  .policystance{font-size:13px;color:var(--warn);border:1px solid var(--warn);border-radius:14px;padding:3px 10px}
+  .policyrule{font-size:13px;color:var(--muted);line-height:1.6;margin-top:5px}
+  .policygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-top:11px}
+  .policyitem{background:var(--panel2);border:1px solid var(--grid);border-radius:10px;padding:12px 14px;line-height:1.6}
+  .policytop{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+  .policydate{color:var(--idx);font-size:13px;font-weight:700}
+  .policyactor{font-size:15px;font-weight:700}
+  .policytag{font-size:12px;border:1px solid;border-radius:10px;padding:1px 7px;white-space:nowrap}
+  .policytag.kind{color:var(--blue);border-color:var(--blue)}
+  .policytag.loose{color:var(--green);border-color:var(--green)}
+  .policytag.tight{color:var(--red);border-color:var(--red)}
+  .policytag.mixed{color:var(--warn);border-color:var(--warn)}
+  .policychannel{font-size:12.5px;color:var(--muted);margin-bottom:5px}
+  .policysummary{font-size:14px;color:var(--txt)}
+  .policyconfirm{font-size:13px;color:var(--warn);margin-top:7px}
+  .policyevidence{font-size:13px;color:var(--muted)}
+  .policysources{font-size:12.5px;margin-top:7px;display:flex;gap:10px;flex-wrap:wrap}
+
   /* ===== 第二层：传导链 ===== */
   .chain{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
   .chain .step{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--grid);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
@@ -383,6 +443,7 @@ window.SUMMARY = {
     .traderow>div{padding:3px 0}
     .traderow>div::before{content:attr(data-label);display:inline-block;color:var(--muted);font-size:11.5px;width:68px;vertical-align:top}
     .traderow .asset{display:inline-block}
+    .policygrid{grid-template-columns:1fr}
   }
   body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0);background-size:26px 26px;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 42%,transparent 78%);mask-image:linear-gradient(180deg,#000 0%,#000 42%,transparent 78%)}
   body::after{content:"";position:fixed;top:-18vmax;left:50%;width:60vmax;height:60vmax;z-index:-1;pointer-events:none;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle, var(--glow) 0%, transparent 66%);opacity:.55;animation:bg-breathe 14s ease-in-out infinite}
@@ -449,6 +510,18 @@ window.SUMMARY = {
     <div class="evrow" id="evrow"></div>
   </div>
 
+  <!-- 二c、政策预期覆盖层（只作定性解释与市场确认，不参与源头紧度） -->
+  <div class="panelblk" id="policyblk" style="display:none">
+    <div class="policyhead">
+      <div>
+        <div class="policytitle">政策预期覆盖层 <span class="lbl" style="margin-left:6px">官员讲话 / 正式行动 / 市场确认 · 不计入客观紧度</span></div>
+        <div class="policyrule" id="policyrule"></div>
+      </div>
+      <span class="policystance" id="policystance"></span>
+    </div>
+    <div class="policygrid" id="policygrid"></div>
+  </div>
+
   <!-- 三、配置 -->
   <h2 id="alloc">资产配置 <span class="no">三资产组合：股票 + 短期国债 + 黄金 · 比例=当下周期档位目标</span></h2>
   <div class="alloc">
@@ -511,7 +584,8 @@ window.SUMMARY = {
 <script>
 window.addEventListener('DOMContentLoaded',function(){
 const col=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const safeUrl=u=>{try{const x=new URL(String(u));return x.protocol==='https:'?x.href:null}catch(_){return null}};
 const fmt=v=>(v>=0?'+':'')+(+v).toFixed(2);
 const pm=v=>(v>=0?'+':'')+v;
 const DATA=window.DATA, S=window.SUMMARY, W=window.WEEKLY, T=window.TRADE_SIGNALS, L=W&&W.latest;
@@ -683,6 +757,32 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
       <div><span class="evtag ${cls[e.impact]||'obs'}">${esc(e.impact)}</span>${e.confirm?'':'<span class="evtag tbd">待定</span>'}</div>
       <div class="note" style="margin-top:5px">${esc(e.note)}</div>
     </div>`;
+  }).join('');
+})();
+
+/* ---------- 一c、政策预期覆盖层（展示专用，不参与 tight/regime/allocPlan） ---------- */
+(function(){
+  const p=S&&S.policyOverlay, items=p&&Array.isArray(p.items)?p.items.slice(0,3):[];
+  if(!p||!items.length)return;
+  const block=document.getElementById('policyblk');
+  block.style.display='';
+  document.getElementById('policyrule').textContent=p.rule||'本层仅作定性解释，不参与客观紧度计算。';
+  const stance=document.getElementById('policystance');
+  stance.textContent=(p.updated?('更新 '+p.updated+' · '):'')+(p.stance||'政策信号待确认');
+  document.getElementById('policygrid').innerHTML=items.map(i=>{
+    const tone=['loose','tight','mixed'].includes(i.tone)?i.tone:'mixed';
+    const links=[];
+    const src=safeUrl(i.source), market=safeUrl(i.marketSource);
+    if(src)links.push(`<a href="${esc(src)}" target="_blank" rel="noopener noreferrer">${esc(i.sourceLabel||'官方来源')}</a>`);
+    if(market)links.push(`<a href="${esc(market)}" target="_blank" rel="noopener noreferrer">${esc(i.marketSourceLabel||'市场确认')}</a>`);
+    return `<article class="policyitem">
+      <div class="policytop"><span class="policydate">${esc(i.date||'')}</span><span class="policyactor">${esc(i.actor||'')}</span><span class="policytag kind">${esc(i.kind||'政策信号')}</span><span class="policytag ${tone}">${esc(i.bias||'待判断')}</span></div>
+      <div class="policychannel">传导渠道：${esc(i.channel||'待确认')}</div>
+      <div class="policysummary">${esc(i.summary||'')}</div>
+      <div class="policyconfirm">市场确认：${esc(i.confirmation||'待确认')}</div>
+      <div class="policyevidence">${esc(i.evidence||'')}</div>
+      ${links.length?`<div class="policysources">${links.join('')}</div>`:''}
+    </article>`;
   }).join('');
 })();
 

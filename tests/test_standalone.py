@@ -6,6 +6,9 @@ import build_standalone
 from build_trade_signals import write_output
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
 class StandaloneTests(unittest.TestCase):
     def test_standalone_inlines_trade_signals(self):
         html = build_standalone.build()
@@ -44,6 +47,20 @@ class StandaloneTests(unittest.TestCase):
             data["assets"]["stock"]["close"] = 101
             self.assertTrue(write_output(data, output))
             self.assertIn('"close":101', output.read_text(encoding="utf-8"))
+
+    def test_policy_overlay_is_display_only_and_inlined(self):
+        summary = (ROOT / "summary.js").read_text(encoding="utf-8")
+        index = (ROOT / "index.html").read_text(encoding="utf-8")
+        html = build_standalone.build()
+
+        self.assertIn('"policyOverlay"', summary)
+        self.assertIn("不计入源头紧度", summary)
+        self.assertIn('id="policyblk"', index)
+        self.assertIn("政策预期覆盖层", index)
+        self.assertIn("政策预期覆盖层", html)
+
+        tight_block = index[index.index("const SRC="):index.index("/* ---------- 一、结论层")]
+        self.assertNotIn("policyOverlay", tight_block)
 
 
 if __name__ == "__main__":

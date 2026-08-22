@@ -54,6 +54,45 @@ window.SUMMARY = {
     {"d": "2026-09-17", "name": "BOJ利率会议（17-18日）", "impact": "源头", "note": "日本央行官方日历确认；观察1.0%政策利率与加息异议是否变化", "confirm": true}
   ],
 
+  /* policyOverlay: 官员讲话、正式政策行动与市场确认的定性覆盖层。
+     只解释政策意图和潜在传导，不进入 indicators，不参与源头紧度、regime、档位或仓位计算。
+     每项必须有可追溯来源；confirmation 只描述市场是否确认，不能替代客观数据。 */
+  "policyOverlay": {
+    "updated": "2026-08-23",
+    "stance": "期限端边际宽松 × 政策利率仍偏紧 · 分歧待验证",
+    "rule": "本层只解释政策意图与市场确认，不计入源头紧度，不自动修改周期档位或目标权重。",
+    "items": [
+      {
+        "date": "2026-08-19",
+        "actor": "美国财政部 / 贝森特",
+        "kind": "正式行动",
+        "bias": "期限端边际宽松",
+        "tone": "loose",
+        "channel": "长债市场流动性 / 期限溢价",
+        "summary": "财政部把部分10—30年期流动性支持回购由每次20亿美元提高至至少40亿美元；回购由新发行融资替代，不等同于美联储QE，也不直接增加银行准备金。",
+        "confirmation": "市场尚未确认",
+        "evidence": "消息后长债收益率一度回落但随后反弹；继续观察实际回购结果、10Y/30Y收益率、期限溢价与TGA结算路径。",
+        "source": "https://home.treasury.gov/news/press-releases/sb0584",
+        "sourceLabel": "美国财政部：回购机制",
+        "marketSource": "https://apnews.com/article/rates-bond-market-bessent-inflation-c6e148f8235a98245adf04b2d4bdd8d1",
+        "marketSourceLabel": "AP：8月19日行动与市场反应"
+      },
+      {
+        "date": "2026-08-19",
+        "actor": "美联储",
+        "kind": "官方纪要",
+        "bias": "政策利率仍偏紧",
+        "tone": "tight",
+        "channel": "短端利率预期 / 金融条件",
+        "summary": "7月会议纪要显示多数与会者支持维持利率，但数名与会者主张加息25个基点，多人认为通胀若未持续回落，政策仍可能需要进一步收紧。",
+        "confirmation": "待9月会议确认",
+        "evidence": "与财政部压低长端期限溢价的方向形成分歧，因此当前不能把政策组合解读为全面流动性宽松。",
+        "source": "https://www.federalreserve.gov/monetarypolicy/fomcminutes20260729.htm",
+        "sourceLabel": "Federal Reserve：7月会议纪要"
+      }
+    ]
+  },
+
   /* ===== 周期框架层（每周更新）=====
      cycles: 七层周期定位卡。pct=阶段进度0-100，措辞随周更新。
      clockStage: 商品轮动时钟 0金银 1有色 2原油 3尾声。
