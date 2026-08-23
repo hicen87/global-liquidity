@@ -55,8 +55,11 @@ class StandaloneTests(unittest.TestCase):
 
         self.assertIn('"policyOverlay"', summary)
         self.assertIn("不计入源头紧度", summary)
+        self.assertIn('"region": "中国"', summary)
+        self.assertIn("中国独立政策脉络", summary)
         self.assertIn('id="policyblk"', index)
         self.assertIn("政策预期覆盖层", index)
+        self.assertIn("i.region", index)
         self.assertIn("政策预期覆盖层", html)
 
         tight_block = index[index.index("const SRC="):index.index("/* ---------- 一、结论层")]

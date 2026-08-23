@@ -121,6 +121,7 @@
   .policydate{color:var(--idx);font-size:13px;font-weight:700}
   .policyactor{font-size:15px;font-weight:700}
   .policytag{font-size:12px;border:1px solid;border-radius:10px;padding:1px 7px;white-space:nowrap}
+  .policytag.region{color:var(--gold);border-color:var(--gold);font-weight:600}
   .policytag.kind{color:var(--blue);border-color:var(--blue)}
   .policytag.loose{color:var(--green);border-color:var(--green)}
   .policytag.tight{color:var(--red);border-color:var(--red)}
@@ -319,7 +320,7 @@
   <div class="panelblk" id="policyblk" style="display:none">
     <div class="policyhead">
       <div>
-        <div class="policytitle">政策预期覆盖层 <span class="lbl" style="margin-left:6px">官员讲话 / 正式行动 / 市场确认 · 不计入客观紧度</span></div>
+        <div class="policytitle">政策预期覆盖层 <span class="lbl" style="margin-left:6px">美国政策组合 + 中国独立政策脉络 · 不计入客观紧度</span></div>
         <div class="policyrule" id="policyrule"></div>
       </div>
       <span class="policystance" id="policystance"></span>
@@ -567,7 +568,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
 
 /* ---------- 一c、政策预期覆盖层（展示专用，不参与 tight/regime/allocPlan） ---------- */
 (function(){
-  const p=S&&S.policyOverlay, items=p&&Array.isArray(p.items)?p.items.slice(0,3):[];
+  const p=S&&S.policyOverlay, items=p&&Array.isArray(p.items)?p.items.slice(0,4):[];
   if(!p||!items.length)return;
   const block=document.getElementById('policyblk');
   block.style.display='';
@@ -581,7 +582,7 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
     if(src)links.push(`<a href="${esc(src)}" target="_blank" rel="noopener noreferrer">${esc(i.sourceLabel||'官方来源')}</a>`);
     if(market)links.push(`<a href="${esc(market)}" target="_blank" rel="noopener noreferrer">${esc(i.marketSourceLabel||'市场确认')}</a>`);
     return `<article class="policyitem">
-      <div class="policytop"><span class="policydate">${esc(i.date||'')}</span><span class="policyactor">${esc(i.actor||'')}</span><span class="policytag kind">${esc(i.kind||'政策信号')}</span><span class="policytag ${tone}">${esc(i.bias||'待判断')}</span></div>
+      <div class="policytop"><span class="policydate">${esc(i.date||'')}</span><span class="policytag region">${esc(i.region||'全球')}</span><span class="policyactor">${esc(i.actor||'')}</span><span class="policytag kind">${esc(i.kind||'政策信号')}</span><span class="policytag ${tone}">${esc(i.bias||'待判断')}</span></div>
       <div class="policychannel">传导渠道：${esc(i.channel||'待确认')}</div>
       <div class="policysummary">${esc(i.summary||'')}</div>
       <div class="policyconfirm">市场确认：${esc(i.confirmation||'待确认')}</div>
