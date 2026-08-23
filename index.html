@@ -568,7 +568,8 @@ document.getElementById('gsub').textContent='紧度 '+tight.toFixed(2)+'/2 = ①
 
 /* ---------- 一c、政策预期覆盖层（展示专用，不参与 tight/regime/allocPlan） ---------- */
 (function(){
-  const p=S&&S.policyOverlay, items=p&&Array.isArray(p.items)?p.items.slice(0,4):[];
+  const p=S&&S.policyOverlay, raw=p&&Array.isArray(p.items)?p.items.slice(0,4):[];
+  const items=raw.filter(i=>i.region!=='中国').concat(raw.filter(i=>i.region==='中国'));
   if(!p||!items.length)return;
   const block=document.getElementById('policyblk');
   block.style.display='';

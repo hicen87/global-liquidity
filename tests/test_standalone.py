@@ -60,6 +60,8 @@ class StandaloneTests(unittest.TestCase):
         self.assertIn('id="policyblk"', index)
         self.assertIn("政策预期覆盖层", index)
         self.assertIn("i.region", index)
+        self.assertIn("i.region!=='中国'", index)
+        self.assertIn("i.region==='中国'", index)
         self.assertIn("政策预期覆盖层", html)
 
         tight_block = index[index.index("const SRC="):index.index("/* ---------- 一、结论层")]
