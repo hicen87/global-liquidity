@@ -29,18 +29,20 @@
   .gaugebar .pin{background:#333;box-shadow:none}
   .gaugebar .pin.ghost{background:rgba(0,0,0,.3)}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;overflow-x:clip}
   .wrap{max-width:1200px;margin:0 auto;padding:16px 24px 60px}
   a{color:var(--blue)}
 
   /* 顶部导航 */
   nav{position:sticky;top:0;z-index:50;background:var(--bg);
       border-bottom:1px solid var(--grid);display:flex;gap:4px;align-items:center;overflow-x:auto;
+      width:100%;max-width:100vw;
       padding:10px max(24px,calc((100% - 1200px)/2 + 24px))}
   nav .brand{font-size:16.5px;font-weight:700;margin-right:12px;white-space:nowrap}
   nav a{color:var(--muted);text-decoration:none;font-size:15.5px;padding:5px 10px;border-radius:6px;white-space:nowrap}
   nav a:hover{color:var(--txt);background:var(--panel)}
-  nav .beta{margin-left:auto;font-size:13px;color:var(--warn);border:1px solid var(--warn);border-radius:10px;padding:1px 8px;white-space:nowrap}
+  nav .home-link{margin-left:auto}
+  nav .beta{font-size:13px;color:var(--warn);border:1px solid var(--warn);border-radius:10px;padding:1px 8px;white-space:nowrap}
 
   h2{font-size:17.5px;font-weight:600;margin:34px 0 4px;display:flex;align-items:center;gap:8px}
   h2 .no{color:var(--muted);font-weight:400;font-size:14px}
@@ -262,11 +264,11 @@
 </style>
 </head>
 <body>
-<nav>
+<nav aria-label="全站研究导航">
   <a href="https://brassivo.com" class="brand"><img src="favicon.svg" alt="Brassivo">BRASSIVO <span style="color:var(--warm);font-weight:700">RESEARCH</span></a>
-  <a href="#hero">结论</a><a href="#chain">逻辑链</a><a href="#alloc">配置</a><a href="#data">深入数据</a>
-  <a href="https://investment.brassivo.com" class="cur" style="margin-left:auto">宏观流动性</a><a href="https://stocks.brassivo.com/sectors.html">美股板块</a><a href="https://stocks.brassivo.com">美股个股</a><a href="https://china.brassivo.com/sectors.html">中国板块</a><a href="https://china.brassivo.com">中国个股</a>
+  <a href="https://brassivo.com" class="home-link">首页</a><a href="https://brassivo.com/honghao/">宏观观点</a><a href="https://brassivo.com/eps/">EPS修正</a><a href="https://investment.brassivo.com" class="cur" aria-current="page">全球流动性</a><a href="https://stocks.brassivo.com/sectors.html">美股板块</a><a href="https://china.brassivo.com/sectors.html">中国板块</a><a href="https://stocks.brassivo.com">美股个股</a><a href="https://china.brassivo.com">中国个股</a>
 </nav>
+<script>requestAnimationFrame(()=>{const n=document.querySelector('nav[aria-label="全站研究导航"]'),c=n?.querySelector('[aria-current="page"]');if(n&&c)n.scrollLeft=Math.max(0,c.offsetLeft-(n.clientWidth-c.offsetWidth)/2)})</script>
 <div class="wrap">
 
   <!-- 一、结论 -->
